@@ -1,0 +1,43 @@
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+.DS_Store
+
+# testing
+/coverage
+
+# production
+/build
+
+/flowNary/bin
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+package-lock.json
+package.json
+yarn.lock
+.eslintrc.json
+
+commit.sh
+flowNary/src/main/material-dashboard-react-main/.eslintrc.json
+flowNary/src/main/material-dashboard-react-main/package.json
+/flowNary/.metadata
+/flowNary/src/main/Frontend
+/flowNary/src/main/template
+/flowNary/src/main/template/node_modules
+/flowNary/src/main/material-dashboard-material-ui-v4-main
+flowNary/src/main/material-dashboard-material-ui-v4-main/material-dashboard-material-ui-v4-main/src/assets/jss/material-dashboard-react/components/rtlHeaderLinksStyle.js
+/flowNary/src/main/Frontend/server
+flowNary/src/main/material-dashboard-react-main/src/layouts/billing/index.js
+flowNary/src/main/material-dashboard-react-main/src/layouts/billing/index.js
+/flowNary/src/main/Frontend/server/node_modules
