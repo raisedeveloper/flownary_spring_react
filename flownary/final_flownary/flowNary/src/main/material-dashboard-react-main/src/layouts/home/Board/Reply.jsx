@@ -315,7 +315,7 @@ export default function Reply(props) {
                           [data.rid]: e.target.value,
                         }));
                       }}
-                      placeholder="댓글입력.."
+                      placeholder="댓글입.."
                       className="custom-input"
                       onClick={(e) => e.stopPropagation()}
                       onKeyUp={(e) => { handleKeyPress2(e, formInputs[data.rid], data.rid); if (e && e.key === 'Enter') { formChange[data.rid] = false } }}
