@@ -251,7 +251,7 @@ export default function Reply(props) {
             <input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="댓글을 입력 하세요.."
+              placeholder="댓글을 입력 하세요."
               className="custom-input"
               style={{
                 border: 'none',
