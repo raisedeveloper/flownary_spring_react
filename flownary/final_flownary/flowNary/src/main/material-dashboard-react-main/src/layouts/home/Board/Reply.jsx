@@ -231,7 +231,7 @@ export default function Reply(props) {
                       handleSearch(board.data.hashTag)
                     }
                   >
-                    #{board.data.hashTag}
+                    #{board.data.hashTag}  
                   </Button>
                 )
               ) : null} 
