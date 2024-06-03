@@ -140,14 +140,14 @@ export default function ReReply(props) {
                       marginTop: 0.25,
                       marginLeft: 2.5,
                     }}>
-                    <Avatar sx={{ cursor: 'pointer' }}
+                    <Avatar sx={{ cursor: 'pointer',  width: 0.04, height: 0.04 }}
                       onClick={() => handleMyPage(data.uid)} src={`https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${data.profile}`}
                     />
                     <ListItemText sx={{ paddingLeft: 1 }}
                       primary={<Typography variant="subtitle3" sx={{ fontSize: "15px", color: 'black', cursor: 'pointer' }} onClick={() => handleMyPage(data.uid)}>{data.nickname}</Typography>}
                       secondary={
                         // 댓글 내용
-                        <Typography variant="body1" color="text.primary" sx={{ overflowWrap: 'break-word', }}>
+                        <Typography variant="body1" color="text.primary" sx={{ overflowWrap: 'break-word', fontSize:'small' }}>
                           {data.rrContents != null && (expandedContents[index] ? data.rrContents : data.rrContents.slice(0, 28))}
                           {data.rrContents != null && data.rrContents.length > 30 && !expandedContents[index] && (
                             <button className='replyOpen' onClick={() => toggleExpand(index)}>...더보기</button>

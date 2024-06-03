@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 // @mui material components
 import Grid from "@mui/material/Grid";
 import axios from "axios";
@@ -39,7 +41,9 @@ import Iconify from "components/iconify/iconify";
 import { Declaration } from "api/alert";
 import { insertDeclaration } from "api/axiosPost";
 
+
 export default function Home() {
+
   timeago.register('ko', ko);
   const queryClient = useQueryClient()
   const [expanded, setExpanded] = useState({});
@@ -70,12 +74,40 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [currentBid, setCurrentBid] = useState(null);
 
+
   // if (uid == -1) {
   //   navigate("/login");
   // }
   const nickname = useGetUserNicknameLS();
 
   const { activeUser } = useContext(UserContext);
+  const [bContents, setBcontents] = useState('');
+  const BoardDetailDialog = ({ open, handleClose, bid, uid, index, nickname, handleButtonLikeReply, handleButtonLikeReReply, handleButtonLike }) => {
+    return (
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          sx: {
+            width: '90%',
+            height: '80vh',
+            maxWidth: 'none',
+            zIndex: 0
+          },
+        }}
+      >
+        <IconButton aria-label="close" onClick={handleClose}
+          sx={{
+            position: 'absolute', right: 8, top: 8,
+            color: (theme) => theme.palette.grey[500],
+            zIndex: 2
+          }} >
+          <CloseIcon />
+        </IconButton>
+        <BoardDetail bid={bid} uid={uid} index={index} handleClose={handleClose} nickname={nickname} handleButtonLikeReply={handleButtonLikeReply} handleButtonLikeReReply={handleButtonLikeReReply} handleButtonLike={handleButtonLike} />
+      </Dialog>
+    );
+  };
 
 
   // 창 열고 닫기
@@ -257,7 +289,7 @@ export default function Home() {
       if (uid !== undefined) {
         queryClient.invalidateQueries(['boardmypage', uid]);
       }
-      board.refetch();
+      // boardList.refetch();
     }
   };
 
@@ -547,3 +579,15 @@ export default function Home() {
     </DashboardLayout >
   );
 }
+// PropTypes 유효성 검사 추가
+Home.propTypes = {
+  open: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  bid: PropTypes.number.isRequired,
+  uid: PropTypes.number.isRequired,
+  index: PropTypes.number.isRequired,
+  nickname: PropTypes.string.isRequired,
+  handleButtonLikeReply: PropTypes.func.isRequired,
+  handleButtonLikeReReply: PropTypes.func.isRequired,
+  handleButtonLike: PropTypes.func.isRequired,
+};

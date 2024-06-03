@@ -1,6 +1,6 @@
 // 기본
 import React, { useContext, useEffect, useState } from "react";
-import { Card, Stack, Button, Grid, Modal, Typography, Box, TextareaAutosize, TextField, Icon } from "@mui/material";
+import { Input, Card, Stack, Button, Grid, Modal, Typography, Box, TextareaAutosize, TextField, Icon } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -23,14 +23,14 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import { updateBoard } from "api/axiosPost";
 import { getBoard } from "api/axiosGet";
 import { useQuery } from "@tanstack/react-query";
-
+ 
 
 export default function Posting() {
   const bid = sessionStorage.getItem("bid");
   // 글 내용
   const [text, setText] = useState('');
   const [title, setTitle] = useState('');
-  const [bContents, setBcontents] = useState('');
+  const [content, setContent] = useState('');
   const [shareUrl, setShareUrl] = useState('');
   const [image, setImage] = useState('');
   const [hashTag, setHashTag] = useState('');
@@ -144,16 +144,12 @@ export default function Posting() {
       <DashboardNavbar />
       <Box mt={5} sx={{ p: 2, mb: 1, backgroundColor: 'beige', borderRadius: 5 }}>
         {/* 모달의 상단에 있는 헤더 부분 */}
-        <Stack direction="row" justifyContent="space-between" alignItems="center" marginBottom={2}>
-          <Typography variant="h6" component="h2" fontWeight="bold">수정하기</Typography>
+        <Stack marginTop={-4} direction="row" justifyContent="space-between" alignItems="center" marginBottom={2}>
         </Stack>
-
-        {/* 구분선 */}
-        <hr style={{ opacity: '0.5' }} />
 
         {/* 이미지 업로드 및 미리보기 */}
         <Grid container spacing={2}>
-          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'end' }}>
             <div>
               <Button component="label">
                 <Icon style={{ color: 'black' }}>add_photo_alternate</Icon>
@@ -164,15 +160,6 @@ export default function Posting() {
                   accept="image/*"
                   onChange={handleFileChange}
                 />
-
-              </Button>
-              <Button onChange={handleChange('panel2')}>
-                <Icon style={{ color: 'black' }} fontSize='small'>add_location_alt</Icon>
-
-                <Typography fontSize='small'>
-                  {/* 카카오 맵 API 지도 생성 */}
-                </Typography>
-
               </Button>
             </div>
             <div>
@@ -212,26 +199,41 @@ export default function Posting() {
               marginLeft: '15px',
               marginBottom: '10px',
               boxSizing: 'border-box',
+              backgroundColor: 'none',
             }}
           />
         </Grid>
 
-        {/* 게시글 작성 부분 */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            multiline
-            rows={15}
-            onEnter={handleOnEnter}
-            placeholder="문구를 입력하세요..."
-            shouldReturn
-            fullWidth
-            fontSize={15}
-            language='kr'
-            sx={{ pl: 2, pr: 5.5 }}
-          />
-        </Grid>
+ {/* 내용 작성 부분 */}
+ <Grid item xs={12} sm={6} p='2px'>
+        <TextareaAutosize
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="어떤 일이 있나요?"
+          style={{
+            width: "70%",
+            // minHeight: 100,
+            // maxHeight: 1000,
+            overflowY: "auto",
+            border: "1px solid #ddd", // 테두리 스타일 지정
+            borderRadius: 4, // 테두리 모서리를 둥글게 만듭니다.
+            padding: 8, // 내부 여백 추가
+            resize: "none" // 사용자가 크기를 조정하지 못하도록 설정
+          }}
+          maxLength={5000} // 최대 글자 수 지정
+        />
+      </Grid>
+      {/* 해시태그 작성 부분 */}
+      <Grid item xs={12} sm={6} p='2px'>
+        <Input
+          value={hashTag}
+          onChange={(e) => handleHashTagChange(e)}
+          placeholder="쉼표HashTag / 최대 3개"
+          fontSize={15}
+          fullWidth
+          language='kr'
+        />
+      </Grid>
 
         {/* 위치 */}
         {/* 게시물 공개 비공개 */}

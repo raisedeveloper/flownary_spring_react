@@ -14,10 +14,14 @@ import * as timeago from 'timeago.js';
 import ko from 'timeago.js/lib/lang/ko';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import Alert from '@mui/material/Alert';
+import CheckIcon from '@mui/icons-material/Check';
+
 
 const BoardDetail = forwardRef(({ bid, uid, index, handleClose, nickname, handleButtonLike, handleButtonLikeReply, handleButtonLikeReReply }, ref) => {
 
   timeago.register('ko', ko); // 한국어로 시간 표시 설정
+  const [alertOpen, setAlertOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleCloseModal = () => setOpen(false);
@@ -56,7 +60,8 @@ const BoardDetail = forwardRef(({ bid, uid, index, handleClose, nickname, handle
     if (navigator.clipboard && board.shareUrl) {
       navigator.clipboard.writeText(`${process.env.REACT_APP_ADDRESS}/url/${board.shareUrl}`)
         .then(() => {
-          alert('URL이 클립보드에 복사되었습니다!');
+          setAlertOpen(true);
+          setTimeout(() => setAlertOpen(false), 1500); // 1.5초 후에 알림을 닫습니다.
         })
         .catch(err => {
           console.error('Failed to copy: ', err);
@@ -153,10 +158,16 @@ const BoardDetail = forwardRef(({ bid, uid, index, handleClose, nickname, handle
             </IconButton>
           </Grid>
         </Grid>
-        <Typography color="text.secondary" sx={{ mt: 2, mr: 3, fontSize: 'small', maxHeight: '20vh', flex: 1, overflowY: 'auto' }}>
+        <div>
+          {alertOpen && (
+            <Alert icon={<CheckIcon fontSize="inherit" />} severity="success">
+              URL이 클립보드에 복사되었습니다!
+            </Alert>
+          )}
+        </div>
+        <Typography color="text.secondary" sx={{ mt: 2, mr: 3, ml: 2, fontSize: 'small', maxHeight: '20vh', flex: 1, overflowY: 'auto', whiteSpace: 'pre-line' }}>
           {board.bContents}
         </Typography>
-
         <Box sx={{ flexGrow: 0, overflowY: 'auto', maxHeight: '47vh' }}> {/* 댓글 목록에 오버스크롤 적용 */}
           <Reply bid={bid} uid={uid} index={index} nickname={nickname} handleButtonLike={handleButtonLike} handleButtonLikeReReply={handleButtonLikeReReply} handleButtonLikeReply={handleButtonLikeReply} handleMyPage={handleMyPage} />
         </Box>

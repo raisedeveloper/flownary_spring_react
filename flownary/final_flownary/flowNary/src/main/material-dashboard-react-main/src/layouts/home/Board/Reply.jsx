@@ -203,8 +203,8 @@ export default function Reply(props) {
         <MDBox>
           <MDBox sx={{ display: 'flex', alignItems: 'end', justifyContent: 'space-between' }}>
             <MDBox sx={{ display: 'flex', alignItems: 'end', justifyContent: 'start' }}>
-              {board ? (
-                board.data.hashTag && board.data.hashTag.includes(",") ? (
+              {board && board.data.hashTag ? (
+                board.data.hashTag.includes(",") ? (
                   board.data.hashTag.split(",").map((tag, index) => {
                     const trimmedTag = tag.trim(); // 좌우 공백 제거
                     return (
@@ -237,21 +237,21 @@ export default function Reply(props) {
               ) : null}
             </MDBox>
             <MDBox>
-              <Typography sx={{ fontSize: 'small', mr: 5, color: 'coral' }}>
+              <Typography sx={{ fontSize: 'small', mr: 5, color: 'lightcoral' }}>
                 {replyList && replyList.data && replyList.data[index] ? '댓글 수 ' + replyList.data[index].replyCount + '개' : ''}
               </Typography>
             </MDBox>
           </MDBox>
           <MDBox sx={{ p: 2, display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             {user && user.data && <Avatar
-              sx={{ bgcolor: 'red'[500] }}
+              sx={{ bgcolor: 'red'[500], width: 0.07, height: 0.07  }}
               aria-label="recipe"
               src={`https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${user.data.profile}`}
             />}
             <input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="댓글을 입력 하세요."
+              placeholder="댓글을 입력 하세요.."
               className="custom-input"
               style={{
                 border: 'none',
@@ -266,17 +266,17 @@ export default function Reply(props) {
         {/* 댓글표시 영역 */}
         <Stack direction="column" sx={{ width: "100%", overflowX: 'hidden', p: 3, border: 'none', boxShadow: 'none' }}>
           {replyList && replyList.data && replyList.data.map((data, index) => (
-            <List key={index} sx={{ width: '100%', bgcolor: 'background.paper', paddingRight: 0 }}>
+            <List key={index} sx={{ width: '100%', bgcolor: 'background.paper', paddingRight: 0, fontSize: 'small' }}>
               {/* List랑 paper 영역 비슷함 */}
               <Box sx={{ border: 'none', }}>
-                <ListItem alignItems="flex-start" sx={{ marginTop: 0.5, marginLeft: 0.5 }}>
-                  <Avatar onClick={() => handleMyPage(data.uid)} sx={{ cursor: 'pointer' }}
+                <ListItem alignItems="flex-start" sx={{ marginTop: -3, marginLeft: 0.5 }}>
+                  <Avatar onClick={() => handleMyPage(data.uid)} sx={{ cursor: 'pointer', width: 0.07, height: 0.07 }}
                     src={`https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${data.profile}`}
                   />
                   <ListItemText sx={{ paddingLeft: 1 }}
                     primary={<Typography variant="subtitle3" sx={{ fontSize: "15px", color: 'black', cursor: 'pointer' }} onClick={() => handleMyPage(data.uid)}>{data.nickname}</Typography>}
                     secondary={
-                      <Typography variant="body2" color="text.secondary" sx={{ overflowWrap: 'break-word', }}>
+                      <Typography variant="body2" sx={{ overflowWrap: 'break-word', fontSize:'small' }}>
                         {data.rContents != null && (expandedContents[index] ? data.rContents : data.rContents.slice(0, 28))}
                         {data.rContents != null && data.rContents.length > 30 && !expandedContents[index] && (
                           <button className='replyOpen' style={{ color: 'gray', fontSize: 'small', marginLeft: 10 }} onClick={() => toggleExpand(index)}>...더보기</button>
@@ -292,18 +292,18 @@ export default function Reply(props) {
 
                 </ListItem>
                 <Grid style={{ display: 'flex', alignItems: 'center' }}>
-                <Grid item xs={12} md={6} lg={4} style={{ display: 'flex', alignItems: 'center' }}>
-                  <span style={{  flex: 1, color: 'gray', fontSize: '14px', paddingLeft: 50, }} >  <TimeAgo datetime={data.modTime} locale='ko' />ㆍ</span>
-                  <Button sx={{ color: 'lightcoral', padding: 0 }} onClick={() => handleButtonLikeReply(data.rid, data.uid)}>좋아요 {data.likeCount}개  {data.liked ?
-                    <FavoriteIcon sx={{ color: 'lightcoral' }} /> : <FavoriteBorderIcon sx={{ color: 'lightcoral' }} />}</Button>
+                  <Grid item xs={12} md={6} lg={4} style={{ display: 'flex', alignItems: 'center' }}>
+                    <span style={{ flex: 1, color: 'gray', fontSize: '14px', paddingLeft: 50, }} >  <TimeAgo datetime={data.modTime} locale='ko' />ㆍ</span>
+                    <Button sx={{ color: 'lightcoral', padding: 0 }} onClick={() => handleButtonLikeReply(data.rid, data.uid)}>좋아요 {data.likeCount}개  {data.liked ?
+                      <FavoriteIcon sx={{ color: 'lightcoral' }} /> : <FavoriteBorderIcon sx={{ color: 'lightcoral' }} />}</Button>
 
-                  {!formChange[data.rid] &&
-                    <>
-                      <Button onClick={() => handleButtonClick(data.rid)} sx={{ color: 'lightcoral', padding: 0 }}>답글</Button>
-                      {data.uid === activeUser.uid && <Button onClick={() => handleDelete(data.rid)} sx={{ color: 'lightcoral', padding: 0 }}>삭제</Button>}
-                    </>
-                  }
-                </Grid>
+                    {!formChange[data.rid] &&
+                      <>
+                        <Button onClick={() => handleButtonClick(data.rid)} sx={{ color: 'lightcoral', padding: 0 }}>답글</Button>
+                        {data.uid === activeUser.uid && <Button onClick={() => handleDelete(data.rid)} sx={{ color: 'lightcoral', padding: 0 }}>삭제</Button>}
+                      </>
+                    }
+                  </Grid>
                 </Grid>
                 {formChange[data.rid] &&
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '90%', border: 'none', ml: 3 }}>
@@ -343,8 +343,8 @@ export default function Reply(props) {
                 {showReReply[data.rid] && (
                   <ReReply rid={data.rid} uid={uid} nickname={nickname} handleButtonLikeReReply={handleButtonLikeReReply} handleMyPage={handleMyPage} />
                 )}
-              </Box>
-            </List>
+              </Box> 
+            </List> 
           ))}
         </Stack>
       </MDBox>
