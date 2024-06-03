@@ -239,8 +239,8 @@ export default function Reply(props) {
             <MDBox>
               <Typography sx={{ fontSize: 'small', mr: 5, color: 'lightcoral' }}>
                 {replyList && replyList.data && replyList.data[index] ? '댓글 수 ' + replyList.data[index].replyCount + '개' : ''}
-              </Typography>
-            </MDBox>
+              </Typography> 
+            </MDBox> 
           </MDBox>
           <MDBox sx={{ p: 2, display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             {user && user.data && <Avatar
