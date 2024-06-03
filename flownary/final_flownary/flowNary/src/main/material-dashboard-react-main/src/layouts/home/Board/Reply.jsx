@@ -234,7 +234,7 @@ export default function Reply(props) {
                     #{board.data.hashTag}
                   </Button>
                 )
-              ) : null}
+              ) : null} 
             </MDBox>
             <MDBox>
               <Typography sx={{ fontSize: 'small', mr: 5, color: 'lightcoral' }}>
