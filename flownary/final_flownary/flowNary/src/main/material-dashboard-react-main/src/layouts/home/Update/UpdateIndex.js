@@ -235,9 +235,6 @@ export default function Posting() {
         />
       </Grid>
 
-        {/* 위치 */}
-        {/* 게시물 공개 비공개 */}
-
       </Box>
     </DashboardLayout>
   );

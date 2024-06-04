@@ -43,10 +43,10 @@ function ShowAlbumList() {
   };
 
   return (
-    <MDBox py={3}>
-      <MDBox mt={4.5}>
+    <MDBox>
+      <MDBox>
         <YearSelect selectedYear={selectedYear} onChange={handleYearChange} />
-        <Grid container mt={3} spacing={3} sx={{ border: '2px solid white' }}>
+        <Grid container mt={3} spacing={0.5} sx={{ border: '1px solid white' }}>
           {selectedYear > 2022 ?
             (
               Array.isArray(board) && board.map((data, idx) => {
@@ -59,7 +59,7 @@ function ShowAlbumList() {
 
                 return (<>
                   {images &&
-                    <Grid item key={idx} xs={12} md={6} lg={4}>
+                    <Grid item key={idx} xs={12} md={6} lg={3}>
                       <MDBox>
                         <MDBox sx={{ width: '100%', height: '100%' }}>
                           <MDBox
@@ -102,7 +102,7 @@ function ShowAlbumList() {
                 const images = data.image.includes(',') ? data.image.split(',').map(img => img.trim()) : [data.image.trim()];
 
                 return (
-                  <Grid item key={idx} xs={12} md={6} lg={4}>
+                  <Grid item key={idx} xs={12} md={6} lg={3}>
                     <MDBox>
                       <MDBox sx={{ width: '100%', height: '100%' }}>
                         <MDBox

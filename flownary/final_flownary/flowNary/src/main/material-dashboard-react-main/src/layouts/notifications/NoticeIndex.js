@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 // @mui material components
 import Grid from "@mui/material/Grid";
@@ -28,8 +28,128 @@ import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import NotificationItem from "examples/Items/NotificationItem";
+import { UserContext } from "api/LocalStorage";
+import { deleteNoticeAll } from "api/axiosPost";
+import { useWebSocket } from "api/webSocketContext";
+import { getNoticeList } from "api/axiosGet";
+import { isEmpty } from "api/emptyCheck";
+import { useNavigate } from "react-router-dom";
+import { deleteNotice } from "api/axiosPost";
 
 export default function Notifications() {
+
+  const { activeUser } = useContext(UserContext);
+  const { stompClient } = useWebSocket();
+  const [notice1, setNotice1] = useState([]);
+  const [notice2, setNotice2] = useState([]);
+  const [notice3, setNotice3] = useState([]);
+  const [notice4, setNotice4] = useState([]);
+  const [notice5, setNotice5] = useState([]);
+  const [open, setOpen] = useState([false, false, false, false, true]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (activeUser.uid !== -1)
+    {
+      const getNotices = async () => {
+        const list1 = await getNoticeList(activeUser.uid, 1);
+        setNotice1(list1);
+        const list2 = await getNoticeList(activeUser.uid, 2);
+        setNotice2(list2);
+        const list3 = await getNoticeList(activeUser.uid, 3);
+        setNotice3(list3);
+        const list4 = await getNoticeList(activeUser.uid, 4);
+        setNotice4(list4);
+        const list5 = await getNoticeList(activeUser.uid, 5);
+        setNotice5(list5);
+        deleteNoticeAll(activeUser.uid, 0);
+      }
+
+      getNotices();
+
+      let nlist1;
+      let nlist2;
+      let nlist3;
+      let nlist4;
+      let nlist5;
+
+      if (stompClient && stompClient.connected) {
+        console.log('notice page connected');
+        stompClient.publish({
+          destination: '/app/page',
+          body: JSON.stringify({ userId: activeUser.uid, page: 'notice', action: 'enter' }),
+        });
+
+        nlist1 = stompClient.subscribe(`/user/notice1/` + activeUser.uid, (message) => {
+          const data = JSON.parse(message.body);
+          setNotice1(prevData => [data, ...prevData]);
+        });
+        nlist2 = stompClient.subscribe(`/user/notice2/` + activeUser.uid, (message) => {
+          const data = JSON.parse(message.body);
+          setNotice2(prevData => [data, ...prevData]);
+        });
+        nlist3 = stompClient.subscribe(`/user/notice3/` + activeUser.uid, (message) => {
+          const data = JSON.parse(message.body);
+          setNotice3(prevData => [data, ...prevData]);
+        });
+        nlist4 = stompClient.subscribe(`/user/notice4/` + activeUser.uid, (message) => {
+          const data = JSON.parse(message.body);
+          setNotice4(prevData => [data, ...prevData]);
+        });
+        nlist5 = stompClient.subscribe(`/user/notice5/` + activeUser.uid, (message) => {
+          const data = JSON.parse(message.body);
+          setNotice5(prevData => [data, ...prevData]);
+        });
+      }
+
+      return () => {
+        if (stompClient && stompClient.connected) {
+          stompClient.publish({
+              destination: '/app/page',
+              body: JSON.stringify({ userId: activeUser.uid, page: 'notice', action: 'leave' }),
+          });
+          console.log('notice page disconnected');
+          if (nlist1) {
+            nlist1.unsubscribe();
+          }
+          if (nlist2) {
+            nlist2.unsubscribe();
+          }
+          if (nlist3) {
+            nlist3.unsubscribe();
+          }
+          if (nlist4) {
+            nlist4.unsubscribe();
+          }
+          if (nlist5) {
+            nlist5.unsubscribe();
+          }
+        }
+      }
+    }
+  }, []);
+
+  const handleopen = (i) => {
+    const newArray = [...open];
+    newArray[i] = !open[i];
+    setOpen(newArray);
+  } 
+
+  const handleClick = (nid, type, oid) => {
+    deleteNotice(nid);
+    if (type === 1) {
+      navigate("/");
+    }
+    else if (type === 2) {
+      navigate("/");
+    }
+    else if (type === 3) {
+      navigate("/follow");
+    }
+    else if (type === 4) {
+      navigate("/chatting", {state: { cid: oid }});
+    }
+  }
 
   return (
     <DashboardLayout>
@@ -37,13 +157,13 @@ export default function Notifications() {
       <Box m={3}>
         <Card sx={{ height: "100%",  boxShadow: 'none', backgroundColor:'beige'  }}>
           <Box mx={3} mt={3}>
-            <MDTypography variant="h6" fontWeight="medium">
-              패밀리 알림
+            <MDTypography variant="h6" fontWeight="medium" onClick={() => handleopen(0)}>
+              새 글 알림 - {!isEmpty(notice1) ? notice1.length : 0}건
             </MDTypography>
-            <CardContent sx={{ fontSize: 'large', fontWeight: 'bolder' }}>
-              <NotificationItem icon={<Icon>send_outlined</Icon>} title="새로운 메시지가 있습니다" />
-              <NotificationItem icon={<Icon>diversity_1</Icon>} title="새로운 패밀리를 찾아보세요" />
-              <NotificationItem icon={<Icon>history_edu</Icon>} title="패밀리User의 새로운 게시물이 있습니다" />
+            <CardContent sx={{ fontSize: 'large', fontWeight: 'bolder'}} >
+              {open[0] && notice1 && !isEmpty(notice1) && notice1.map((item, idx) => (
+                <NotificationItem key={idx} onClick={() => handleClick(item.nid, item.type, item.oid)} icon={<Icon>history_edu</Icon>} title={item.nContents} />
+              ))}
             </CardContent>
           </Box>
         </Card>
@@ -51,12 +171,13 @@ export default function Notifications() {
       <Box m={3}>
         <Card sx={{ height: "100%",  boxShadow: 'none', backgroundColor:'beige'  }}>
           <Box mx={3} mt={3}>
-            <MDTypography variant="h6" fontWeight="medium">
-              할 일 / 일정
+            <MDTypography variant="h6" fontWeight="medium" onClick={() => handleopen(1)}>
+              댓글 알림 - {!isEmpty(notice2) ? notice2.length : 0}건
             </MDTypography>
             <CardContent sx={{ fontSize: 'large', fontWeight: 'bolder' }}>
-              <NotificationItem icon={<Icon>playlist_add_check</Icon>} title="오늘의 할 일이 있습니다" />
-              <NotificationItem icon={<Icon>event_available</Icon>} title="오늘의 일정이 있습니다" />
+              {open[1] && notice2 && !isEmpty(notice2) && notice2.map((item, idx) => (
+                <NotificationItem key={idx} onClick={() => handleClick(item.nid, item.type, item.oid)} icon={<Icon>reply_all</Icon>} title={item.nContents} />
+              ))}
             </CardContent>
           </Box>
         </Card>
@@ -64,12 +185,13 @@ export default function Notifications() {
       <Box m={3}>
         <Card sx={{ height: "100%",  boxShadow: 'none', backgroundColor:'beige'  }}>
           <Box mx={3} mt={3}>
-            <MDTypography variant="h6" fontWeight="medium">
-              댓글 / 좋아요
+            <MDTypography variant="h6" fontWeight="medium" onClick={() => handleopen(2)}>
+              팔로우 알림 - {!isEmpty(notice3) ? notice3.length : 0}건
             </MDTypography>
             <CardContent sx={{ fontSize: 'large', fontWeight: 'bolder' }}>
-              <NotificationItem icon={<Icon>reply_all</Icon>} title="새로운 댓글이 있습니다" />
-              <NotificationItem icon={<Icon>favorite</Icon>} title="User가 좋아요를 눌렀습니다" />
+              {open[2] && notice3 && !isEmpty(notice3) && notice3.map((item, idx) => (
+                <NotificationItem key={idx} onClick={() => handleClick(item.nid, item.type, item.oid)} icon={<Icon>people</Icon>} title={item.nContents} />
+              ))}
             </CardContent>
           </Box>
         </Card>
@@ -77,18 +199,17 @@ export default function Notifications() {
       <Box m={3}>
         <Card sx={{ height: "100%",  boxShadow: 'none', backgroundColor:'beige'  }}>
           <Box mx={3} mt={3}>
-            <MDTypography variant="h6" fontWeight="medium">
-              보안 알림
+            <MDTypography variant="h6" fontWeight="medium" onClick={() => handleopen(3)}>
+              메세지 알림 - {!isEmpty(notice4) ? notice4.length : 0}건
             </MDTypography>
             <CardContent sx={{ fontSize: 'large', fontWeight: 'bolder' }}>
-              <NotificationItem icon={<Icon color='warning'>warning</Icon>} title="보안상의 문제가 있습니다" />
+              {open[3] && notice4 && !isEmpty(notice4) && notice4.map((item, idx) => (
+                <NotificationItem key={idx} onClick={() => handleClick(item.nid, item.type, item.oid)} icon={<Icon>send</Icon>} title={item.nContents} />
+              ))}
             </CardContent>
           </Box>
         </Card>
       </Box>
-
-
-
     </DashboardLayout>
   );
 }

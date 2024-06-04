@@ -25,8 +25,7 @@ import Paper from '@mui/material/Paper';
 import Container from '@mui/material/Container';
 import Iconify from '../../../components/iconify';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getBoardList } from "api/axiosGet";
-import { getDeclarationList } from "api/axiosGet";
+import { getDeclarationList, getBoardList } from "api/axiosGet";
 import { DataGrid } from '@mui/x-data-grid';
 
 export default function AdminBoardList({ selected, handleClick }) {
@@ -56,28 +55,51 @@ export default function AdminBoardList({ selected, handleClick }) {
     setCurrentUserId('')
   };
 
+  // 보드 리스트
   const { data: boards, isLoading, isError } = useQuery({
     queryKey: ['boards'],
-    queryFn: () => getBoardList(),
+    queryFn: () => getBoardList(0, 'title', '', '', searchTerm, 1, -1),
+    // count를 0으로 설정하여 모든 데이터 가져오기
   });
 
+  // 신고 보드
   const { data: declaration } = useQuery({
     queryKey: ['boards2'],
     queryFn: () => getDeclarationList(),
   });
 
-  // const paginatedBoards = (boards ? (boards.slice((page - 1) * rowsPerPage, page * rowsPerPage)) : null);
-  // const paginatedDeclarations = (declaration ? (declaration.slice((page - 1) * rowsPerPage, page * rowsPerPage)) : null);
+  // 데이터 가져오기 후 콘솔 로그 추가
+  // console.log('Boards 데이터가 있나? :', boards);
 
-  const rowsDeclaration = (declaration && declaration.map((data, index) => ({
-    id: index, // 간단한 방법으로 행의 인덱스를 id로 사용
+  // 검색어가 존재하면 필터링된 데이터, 그렇지 않으면 전체 데이터를 반환
+  const filteredBoards = searchTerm
+    ? boards?.filter(board =>
+      board.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      board.nickname.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    : boards || [];
+
+  const filteredDeclaration = searchTerm
+    ? declaration?.filter(decl =>
+      decl.dTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      decl.uid.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    : declaration || [];
+
+    const formatDate = (dateString) => {
+      return dateString.replace('T', ' ');
+    };
+
+
+  const rowsDeclaration = filteredDeclaration.map((data, index) => ({
+    id: index,
     bid: data.bid ? (data.bid + "번") : null,
     uid: data.uid,
     dTitle: data.dTitle,
     dContents: data.dContents,
-    modTime: data.modTime,
+       modTime: formatDate(data.modTime),
     state: data.state,
-  })));
+  }));
 
   const columnsDeclaration = [
     { field: 'bid', headerName: '게시글 번호', flex: 1 },
@@ -88,22 +110,24 @@ export default function AdminBoardList({ selected, handleClick }) {
     { field: 'state', headerName: '처리 상태', flex: 1 },
   ];
 
-  const rowsBoards = (boards && boards.map((data, index) => ({
+  const rowsBoards = filteredBoards.map((data, index) => ({
     id: index,
     bid: data.bid + "번",
     nickname: data.nickname,
     title: data.title,
     bContents: data.bContents,
-    modTime: data.modTime,
-  })));
+    modTime: formatDate(data.modTime),
+  }));
+
 
   const columnsBoards = [
-    { field: 'bid', headerName: '게시글 번호', flex: 1 },
-    { field: 'nickname', headerName: '사용자 닉네임', flex: 1 },
-    { field: 'title', headerName: '제목', flex: 1 },
-    { field: 'bContents', headerName: '내용', flex: 1 },
-    { field: 'modTime', headerName: '등록 일자', flex: 1 },
+    { field: 'bid', headerName: '글번호', flex: 1 },
+    { field: 'nickname', headerName: '닉네임', flex: 1 },
+    { field: 'title', headerName: '제목', flex: 2 },
+    { field: 'bContents', headerName: '내용', flex: 3 },
+    { field: 'modTime', headerName: '등록 일자', flex: 3 },
   ];
+
 
   return (
     <DashboardLayout>
@@ -113,7 +137,6 @@ export default function AdminBoardList({ selected, handleClick }) {
       <Box sx={{ width: '100%', p: 4 }}>
         <div>
           <Typography id="modal-modal-title" variant="h6" component="div">
-            신고 목록
             <TextField
               sx={{ ml: 40, mb: 3 }}
               label="Search"
@@ -138,14 +161,16 @@ export default function AdminBoardList({ selected, handleClick }) {
               <Typography variant="h4" > 신고글 목록 </Typography>
               <Stack direction="column" alignItems="center" justifyContent="space-between" mb={5}>
 
-
-                <div style={{ height: 400, width: '100%' }}>
-                  <DataGrid
+                <div style={{ height: 450, width: '100%' }}>
+                  <DataGrid                    
                     rows={rowsDeclaration}
                     columns={columnsDeclaration}
                     initialState={{
                       pagination: {
                         paginationModel: { page: 0, pageSize: 5 },
+                      },
+                      sorting: {
+                        sortModel: [{ field: 'modTime', sort: 'asc' }],
                       },
                     }}
                     pageSizeOptions={[5, 10]}
@@ -180,7 +205,7 @@ export default function AdminBoardList({ selected, handleClick }) {
               <Stack direction="column" alignItems="center" justifyContent="space-between" mb={5}>
 
 
-                <div style={{ height: 400, width: '100%' }}>
+                <div style={{ height: 400, width: '75vw' }}>
                   <DataGrid
                     rows={rowsBoards}
                     columns={columnsBoards}

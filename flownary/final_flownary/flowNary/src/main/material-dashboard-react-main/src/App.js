@@ -18,6 +18,7 @@ import { initializeApp } from "firebase/app";
 import Login from "layouts/authentication/sign-in/LoginIndex.js";
 import Register from "layouts/authentication/sign-up/RegisterIndex.js";
 import { UserContext } from "api/LocalStorage";
+import { GetWithExpiry } from "api/LocalStorage";
 import BoardUrl from "layouts/home/Board/BoardUrl";
 
 export default function App() {
@@ -83,7 +84,7 @@ export default function App() {
     return <div>Error: {error.message}</div>;
   }
 
-  const dynamicRoutes = createRoutes(!!user, (activeUser && activeUser.role === 1) ? true : false);  // 로그인 상태와 어드민 여부에 따라 라우트 동적 생성
+  const dynamicRoutes = createRoutes(!!user, (GetWithExpiry('role') && GetWithExpiry('role') === 1) ? true : false); // 로그인 상태와 어드민 여부에 따라 라우트 동적 생성
 
   return (
     <ThemeProvider theme={darkMode ? themeDark : theme}>
@@ -98,7 +99,6 @@ export default function App() {
             onMouseEnter={handleOnMouseEnter}
             onMouseLeave={handleOnMouseLeave}
           />
-          {activeUser && console.log("왜 안나옴?>" + activeUser.role)}
           <Configurator />
         </>
       )}

@@ -10,25 +10,24 @@ function YearSelect({ selectedYear, onChange }) {
 
   return (
     <>
-      <FormControl sx={{ display: 'flex', justifyContent: 'center' }}>
+      <FormControl sx={{ display: 'flex', justifyContent: 'center', alignItems: 'end' }}>
         <MDTypography mt={3} id="year-select-label">
-          Year  
           <Select
             labelId="year-select-label"
             id="year-select"
             value={selectedYear}
             onChange={onChange}
-            sx={{ width: "8vw", fontSize: 'large', mx:3, p:0.5 }}
+            sx={{ width: "6rem", fontSize: 'large', py: 0.5, px: 2 }}
           >
             {years.map(year => (
               <MenuItem key={year} value={year} >
-                {year > 2022 ? year : "전체"} 년
+                {year > 2022 ? year : "Year"}
               </MenuItem>
             ))}
           </Select>
         </MDTypography>
 
-      </FormControl>
+      </FormControl >
     </>
   );
 }

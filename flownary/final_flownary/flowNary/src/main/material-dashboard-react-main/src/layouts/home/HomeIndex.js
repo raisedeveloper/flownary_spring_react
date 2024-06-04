@@ -1,20 +1,21 @@
-import PropTypes from 'prop-types';
-
 // @mui material components
 import Grid from "@mui/material/Grid";
 import axios from "axios";
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 
+
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 
+
 // Dashboard components
 import TodoList from "./todoList/TodoListIndex";
 import { Avatar, Box, Button, Card, CardContent, CardHeader, CardMedia, Divider, Icon, IconButton, Modal, Stack, Popover, Dialog, Typography, List, ListItem, Popper, Paper, } from "@mui/material";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+
 
 import { Bar } from "react-chartjs-2";
 import MDTypography from "components/MDTypography";
@@ -22,6 +23,7 @@ import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 
 import BoardDetail from "./Board/BoardDetail";
 import Write from './write';
 import CloseIcon from '@mui/icons-material/Close';
+
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { GetWithExpiry } from "api/LocalStorage";
@@ -33,6 +35,7 @@ import TimeAgo from "timeago-react";
 import * as timeago from 'timeago.js';
 import ko from 'timeago.js/lib/lang/ko';
 
+
 import AppTasks from '../admin/statistics/app-tasks';
 import { UserContext } from "api/LocalStorage";
 import { deleteBoard } from "api/axiosPost";
@@ -40,17 +43,64 @@ import { deleteConfirm } from "api/alert";
 import Iconify from "components/iconify/iconify";
 import { Declaration } from "api/alert";
 import { insertDeclaration } from "api/axiosPost";
+import { wrong } from "api/alert";
+import ChatList from "layouts/chatting/ChattingSide";
 
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import MuiAccordion from '@mui/material/Accordion';
+import MuiAccordionSummary from '@mui/material/AccordionSummary';
+import MuiAccordionDetails from '@mui/material/AccordionDetails';
+import styled from "@emotion/styled";
+
+const Accordion = styled((props) => (
+  <MuiAccordion disableGutters elevation={0} square {...props} />
+))(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  '&:not(:last-child)': {
+    borderBottom: 0,
+  },
+  '&::before': {
+    display: 'none',
+  },
+}));
+
+const AccordionSummary = styled((props) => (
+  <MuiAccordionSummary
+    expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />}
+    {...props}
+  />
+))(({ theme }) => ({
+  backgroundColor:
+    'rgba(0, 0, 0, 0)',
+  flexDirection: 'row-reverse',
+  '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+    transform: 'rotate(90deg)',
+  },
+  '& .MuiAccordionSummary-content': {
+    marginLeft: theme.spacing(1),
+  },
+}));
+
+const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderTop: '1px solid rgba(0, 0, 0, .125)',
+}));
 
 export default function Home() {
-
   timeago.register('ko', ko);
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState({});
+
+  const [expandeds, setExpandeds] = useState('panel1');
+
+  const handleChange = (panel) => (event, newExpanded) => {
+    setExpandeds(newExpanded ? panel : false);
+  };
 
   // const Transition = React.forwardRef(function Transition(props, ref) {
   //   return <Slide direction="right" ref={ref} {...props} />;
   // });
+
 
   const handleToggle = (bid) => {
     setExpanded((prevExpanded) => ({
@@ -59,14 +109,17 @@ export default function Home() {
     }));
   };
 
+
   /////////////////////////////////////////////////////////////////////
   // 유저 정보 받아오기
 
+
   const navigate = useNavigate();
 
-  const uid = GetWithExpiry("uid");
+
   const email = GetWithExpiry("email");
   const profile = GetWithExpiry("profile");
+
 
   const [bid, setBid] = useState(0);
   const [index, setIndex] = useState(0);
@@ -74,41 +127,14 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [currentBid, setCurrentBid] = useState(null);
 
-
-  // if (uid == -1) {
-  //   navigate("/login");
-  // }
   const nickname = useGetUserNicknameLS();
 
+  // useLocation으로 state 받기
+  const { state } = useLocation();
   const { activeUser } = useContext(UserContext);
-  const [bContents, setBcontents] = useState('');
-  const BoardDetailDialog = ({ open, handleClose, bid, uid, index, nickname, handleButtonLikeReply, handleButtonLikeReReply, handleButtonLike }) => {
-    return (
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        PaperProps={{
-          sx: {
-            width: '90%',
-            height: '80vh',
-            maxWidth: 'none',
-            zIndex: 0
-          },
-        }}
-      >
-        <IconButton aria-label="close" onClick={handleClose}
-          sx={{
-            position: 'absolute', right: 8, top: 8,
-            color: (theme) => theme.palette.grey[500],
-            zIndex: 2
-          }} >
-          <CloseIcon />
-        </IconButton>
-        <BoardDetail bid={bid} uid={uid} index={index} handleClose={handleClose} nickname={nickname} handleButtonLikeReply={handleButtonLikeReply} handleButtonLikeReReply={handleButtonLikeReReply} handleButtonLike={handleButtonLike} />
-      </Dialog>
-    );
-  };
 
+  // 파라메터에 있는 uid 받기
+  const { uid } = state != undefined ? state : activeUser;
 
   // 창 열고 닫기
   const handleOpen = (e) => {
@@ -117,8 +143,10 @@ export default function Home() {
   }
   const handleClose = () => { setOpen(false); };
 
+
   const location = useLocation();
   const [path2, setPath2] = useState('');
+
 
   useEffect(() => {
     if (location.pathname) {
@@ -138,7 +166,9 @@ export default function Home() {
   const [pageLoading, setPageLoading] = useState(true);
   const observerRef = useRef(null);
 
+
   /////////////////// useQuery로 BoardList 받기 ///////////////////
+
 
   const { data: boardList, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['boardList', uid],
@@ -155,12 +185,12 @@ export default function Home() {
     },
   });
 
-
   const { data: allcount } = useQuery({
     queryKey: ['BoardCount'],
     queryFn: () => getBoardListCount(),
     placeholderData: (p) => p,
   })
+
 
   useEffect(() => {
     if (count >= allcount && allcount !== undefined)
@@ -168,6 +198,7 @@ export default function Home() {
     else if (count < allcount && allcount !== undefined)
       setPageLoading(true);
   }, [count, allcount])
+
 
   const callback = (entries: IntersectionObserverEntry[]) => {
     const target = entries[0];
@@ -177,6 +208,7 @@ export default function Home() {
       setCount((prevcount) => prevcount + 4);
     }
   };
+
 
   useEffect(() => {
     setTimeout(() => {
@@ -199,16 +231,19 @@ export default function Home() {
   }, [page]);
 
 
-
   const addLike = useAddLike();
   const addLikeForm = (sendData) => {
     addLike(sendData);
   }
 
+
   // 좋아요 버튼 누를 때 넘기기
   function handleButtonLike(bid, uid2) {
-    if (uid == -1)
+    if (uid === -1) {
+      wrong("로그인 해주세요.");
       return;
+    }
+
 
     const sendData = {
       uid: uid,
@@ -217,12 +252,15 @@ export default function Home() {
       type: 1,
     }
 
+
     addLikeForm(sendData);
   }
   // 댓글 좋아요 버튼 누를 때 넘기기
   function handleButtonLikeReply(rid, uid2) {
-    if (uid == -1)
+    if (uid === -1) {
+      wrong("로그인 해주세요.");
       return;
+    }
 
     const sendData = {
       uid: activeUser.uid,
@@ -231,11 +269,16 @@ export default function Home() {
       type: 2,
     }
 
+
     addLikeForm(sendData);
   }
   // 대댓글 좋아요 버튼 누를 때 넘기기
   function handleButtonLikeReReply(rrid, uid2) {
-    if (uid === -1) return;
+    if (uid === -1) {
+      wrong("로그인 해주세요.");
+      return;
+    }
+
 
     const sendData = {
       uid: activeUser.uid,
@@ -244,39 +287,48 @@ export default function Home() {
       type: 3,
     }
 
+
     addLikeForm(sendData);
   }
   if (isLoading) {
     <div>로딩중...</div>
   }
 
+
   //popover
   const [anchorEl, setAnchorEl] = useState(null);
   const [anchorEl2, setAnchorEl2] = useState(null);
+
 
   const openPopover = Boolean(anchorEl);
   const openPopover2 = Boolean(anchorEl2);
   const popperRef = useRef(null);
   const [confirm, setConfirm] = useState('');
 
+
   const handleClick = (event, bid) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
     setCurrentBid(bid);
   };
+
 
   const handleClick2 = (event, bid) => {
     setAnchorEl2(anchorEl2 ? null : event.currentTarget);
     setCurrentBid(bid);
   };
 
+
   const handleClosePopover = () => {
     setAnchorEl(null);
     setAnchorEl2(null);
   };
 
+
   const handleClickInside = (event) => {
     event.stopPropagation(); // 팝오버 내부의 이벤트 전파를 중지합니다.
   };
+
+
 
 
   // 삭제
@@ -284,21 +336,24 @@ export default function Home() {
     handleClosePopover();
     const check = await deleteConfirm();
 
+
     if (check === 1) {
       await deleteBoard(currentBid);
       if (uid !== undefined) {
         queryClient.invalidateQueries(['boardmypage', uid]);
       }
-      // boardList.refetch();
+      board.refetch();
     }
   };
+
 
   // 수정
   const handleUpdate = () => {
     handleClosePopover();
     sessionStorage.setItem("bid", bid);
-    navigate("../home/Update");
+    navigate("/home/Update");
   }
+
 
   // 신고
   const handleSiren = async () => {
@@ -317,6 +372,9 @@ export default function Home() {
     navigate("/mypage", { state: { uid: uid } }); // state를 통해 navigate 위치에 파라메터 제공
   }
 
+  const navigateChat = () => {
+    navigate('/chatlist');
+  }
 
   return (
     <DashboardLayout>
@@ -438,6 +496,7 @@ export default function Home() {
                                 title={<Typography variant="subtitle3" sx={{ fontSize: "15px", color: 'black', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => handleMyPage(data.uid)}>{data.nickname}</Typography>}
                               />
 
+
                               <MDBox padding="1rem">
                                 {data.image ?
                                   <MDBox
@@ -533,20 +592,44 @@ export default function Home() {
                   ))
                 ) : <></>}
               </Grid>
-
             </Stack>
+            <Stack direction="column" sx={{ flex: 0.5, }}>
+              <MDBox mb={3} sx={{ position: 'sticky', top: "11%" }}>
+                <Accordion expanded={expandeds === 'panel1'} onChange={handleChange('panel1')} sx={{ borderRadius: expandeds === 'panel1' ? '5%' : 0 }} >
+                  <AccordionSummary aria-controls="panel1d-content" id="panel1d-header">
+                    <MDBox sx={{ backgroundColor: 'transparent', padding: 0, margin: 0 }}>
+                      <MDTypography variant="h5" fontWeight="medium" sx={{ padding: 0, margin: 0, color: 'lightcoral' }}>
+                        To do
+                      </MDTypography>
+                    </MDBox>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <TodoList />
+                  </AccordionDetails>
+                </Accordion>
+                <Accordion expanded={expandeds === 'panel2'} onChange={handleChange('panel2')} sx={{ borderRadius: expandeds === 'panel2' ? '5%' : 0 }}>
+                  <AccordionSummary aria-controls="panel2d-content" id="panel2d-header">
+                    <Grid container sx={{ backgroundColor: 'transparent', padding: 0, margin: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="h5" sx={{ color: 'lightcoral', padding: 0, margin: 0 }}>채팅 목록</Typography>
+                      <IconButton onClick={navigateChat} sx={{ color: 'lightcoral', padding: 0, margin: 0 }}><Icon>send</Icon></IconButton>
+                    </Grid>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <ChatList />
+                  </AccordionDetails>
+                </Accordion>
 
 
-            <Stack direction="column" sx={{ flex: 0.5 }}>
-              <MDBox mb={3} sx={{ position: 'sticky', top: "5%" }}>
-                <TodoList />
               </MDBox>
             </Stack>
           </Stack>
         </MDBox >
       </MDBox >
       {/* <div ref={observerRef}></div> */}
-      <div id="observe" ref={observerRef} style={{ display: 'flex', height: '1rem' }}></div>
+      <div id="observe" ref={observerRef} style={{ display: 'flex', height: '1rem' }}>
+        loading
+      </div>
+
 
       {/* 게시글 모달 */}
       <Dialog
@@ -575,19 +658,8 @@ export default function Home() {
         <BoardDetail bid={bid} uid={uid} index={index} handleClose={handleClose} nickname={nickname} handleButtonLikeReply={handleButtonLikeReply} handleButtonLikeReReply={handleButtonLikeReReply} handleButtonLike={handleButtonLike} />
       </Dialog>
 
+
       <Footer />
     </DashboardLayout >
   );
 }
-// PropTypes 유효성 검사 추가
-Home.propTypes = {
-  open: PropTypes.bool.isRequired,
-  handleClose: PropTypes.func.isRequired,
-  bid: PropTypes.number.isRequired,
-  uid: PropTypes.number.isRequired,
-  index: PropTypes.number.isRequired,
-  nickname: PropTypes.string.isRequired,
-  handleButtonLikeReply: PropTypes.func.isRequired,
-  handleButtonLikeReReply: PropTypes.func.isRequired,
-  handleButtonLike: PropTypes.func.isRequired,
-};

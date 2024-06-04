@@ -22,9 +22,6 @@ const BoardDetail = forwardRef(({ bid, uid, index, handleClose, nickname, handle
 
   timeago.register('ko', ko); // 한국어로 시간 표시 설정
   const [alertOpen, setAlertOpen] = useState(false);
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleCloseModal = () => setOpen(false);
 
   const { data: board, isLoading, isError } = useQuery({
     queryKey: ['board', bid, uid],
@@ -97,13 +94,11 @@ const BoardDetail = forwardRef(({ bid, uid, index, handleClose, nickname, handle
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-
               }}
-              onClick={handleOpen} // 클릭 시 모달 열기
             >
               <div style={{
                 width: '120%',
-                height: '750px',
+                height: '80vh',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -111,8 +106,8 @@ const BoardDetail = forwardRef(({ bid, uid, index, handleClose, nickname, handle
               }}>
                 <img
                   style={{
-                    objectFit: 'cover', // 이미지가 컨테이너에 맞게 조절됨
-                    width: '120%',
+                    objectFit: 'contain', // 이미지 비율을 유지하면서 컨테이너에 맞춤
+                    width: '100%',
                     height: '100%',
                     margin: '0',
                     padding: '0',
@@ -122,6 +117,7 @@ const BoardDetail = forwardRef(({ bid, uid, index, handleClose, nickname, handle
                 />
               </div>
             </Box>
+
           ))}
         </Carousel>
       </Box>
@@ -146,8 +142,8 @@ const BoardDetail = forwardRef(({ bid, uid, index, handleClose, nickname, handle
                     }} />
                 </Avatar>
               }
-              title={<Typography variant="subtitle3" sx={{ fontSize: "15px", color: 'black', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => handleMyPage(board.uid)}>{board.nickname}</Typography>}
-              subheader={board.title}
+              title={<Typography variant="subtitle3" sx={{ fontSize: "1rem", color: 'black', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => handleMyPage(board.uid)}>{board.nickname}</Typography>}
+              subheader={<Typography sx={{ fontSize: "1rem", color: 'black', cursor: 'pointer', maxWidth: "100%" }}>{board.title}</Typography>}
             />
             {<TimeAgo datetime={board.modTime} locale='ko' style={{ fontSize: 'small', paddingBottom: 20 }} />}
             <IconButton sx={{ px: 0, pb: 2.5, my: 0, mx: 2, fontSize: '1.4rem' }} onClick={handleShareButton.bind(null, board.bid)}><Icon style={{ color: 'black' }}>ios_share</Icon></IconButton>
@@ -172,77 +168,6 @@ const BoardDetail = forwardRef(({ bid, uid, index, handleClose, nickname, handle
           <Reply bid={bid} uid={uid} index={index} nickname={nickname} handleButtonLike={handleButtonLike} handleButtonLikeReReply={handleButtonLikeReReply} handleButtonLikeReply={handleButtonLikeReply} handleMyPage={handleMyPage} />
         </Box>
       </Box>
-
-      {/* 모달 부분 */}
-      <Modal
-        open={open}
-        onClose={handleCloseModal}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: '500px', // 모달 창의 너비 조정
-              height: '500px', // 모달 창의 높이 조정
-              bgcolor: 'background.paper',
-              boxShadow: 24,
-              overflow: 'hidden', // 내부 여백을 줄이기 위해 overflow를 hidden으로 설정
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: 0,
-              margin: 0,
-            }}
-          >
-            <Carousel
-              indicators={false}
-              animation="slide"
-              autoPlay={false}
-              sx={{
-                width: '100%',
-                height: '100%',
-              }}
-            >
-              {image && image.map((image, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '100%',
-                    height: '100%',
-                    overflow: 'hidden', // 이미지가 컨테이너를 벗어나지 않도록 함
-                  }}
-                >
-                  <img
-                    style={{
-                      objectFit: 'contain', // 모달 창에서도 동일한 크기로 설정
-                      margin: '0',
-                      padding: '0',
-                      width: '500px', // 부모 요소의 크기에 맞추어 설정
-                      height: '500px',
-                    }}
-                    src={`https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${image}`}
-                    alt={`Image ${index + 1}`}
-                  />
-                  {/* <IconButton
-                    sx={{ position: 'absolute', top: 10, right: 10, cursor: 'pointer',zIndex:'100' }}
-                    onClick={handleCloseModal}
-                  >
-                    <CloseIcon />
-                  </IconButton> */}
-                </Box>
-              ))}
-            </Carousel>
-          </Box>
-        </>
-      </Modal>
     </Box >
   );
 });

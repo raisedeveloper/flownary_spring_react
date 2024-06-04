@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Avatar, Box, Button, Card, CardHeader, Chip, Dialog, Divider, Grid, Icon, IconButton, MenuItem, Paper, Select, Stack, TextField, Typography } from "@mui/material";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { Avatar, Box, Button, Card, CardHeader, Chip, Dialog, Divider, Grid, Icon, IconButton, MenuItem, Paper, Popper, Select, Stack, TextField, Typography } from "@mui/material";
 
 // 아이콘
 import ImageIcon from '@mui/icons-material/Image';
@@ -18,9 +18,15 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { GetWithExpiry } from "api/LocalStorage";
 import { useAddLike } from "api/customHook";
 import { wrong } from "api/alert";
+import Iconify from "components/iconify/iconify";
+import { UserContext } from "api/LocalStorage";
+import { deleteConfirm } from "api/alert";
+import { deleteBoard } from "api/axiosPost";
+import { Declaration } from "api/alert";
+import { insertDeclaration } from "api/axiosPost";
 
 export default function MySearchList() {
-  const uid = GetWithExpiry("uid");
+  const queryClient = useQueryClient();
   const nickname = GetWithExpiry("nickname");
   const query = sessionStorage.getItem("search");
   const location = useLocation();
@@ -33,6 +39,13 @@ export default function MySearchList() {
   const [count, setCount] = useState(12);
   const [page, setPage] = useState(0);
   const [research, setResearch] = useState(false);
+  const [currentBid, setCurrentBid] = useState(null);
+  // useLocation으로 state 받기
+  const { state } = useLocation();
+  const { activeUser } = useContext(UserContext);
+
+  // 파라메터에 있는 uid 받기
+  const { uid } = state != undefined ? state : activeUser;
   const [boardList, setBoardList] = useState([{
     bid: -1,
     uid: -1,
@@ -97,10 +110,10 @@ export default function MySearchList() {
     placeholderData: (p) => p,
   })
 
-  useEffect (() => {
+  useEffect(() => {
     setField("hashTag");
-  },[sessionStorage.getItem('tag')])
-  
+  }, [sessionStorage.getItem('tag')])
+
   useEffect(() => {
     if (count >= allcount && allcount !== undefined)
       setPageLoading(false);
@@ -240,7 +253,9 @@ export default function MySearchList() {
       handleSearchs();
     }
   }
-
+  const handleMyPage = async (uid) => {
+    navigate("/mypage", { state: { uid: uid } });
+  }
   const renderPlaceholder = (value) => {
     switch (value) {
       case 1: return "제목";
@@ -252,9 +267,73 @@ export default function MySearchList() {
     }
   };
 
+  //popover
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorEl2, setAnchorEl2] = useState(null);
+
+
+  const openPopover = Boolean(anchorEl);
+  const openPopover2 = Boolean(anchorEl2);
+  const popperRef = useRef(null);
+  const [confirm, setConfirm] = useState('');
+
+
+  const handleClick = (event, bid) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget);
+    setCurrentBid(bid);
+  };
+
+  const handleClick2 = (event, bid) => {
+    setAnchorEl2(anchorEl2 ? null : event.currentTarget);
+    setCurrentBid(bid);
+  };
+
+  const handleClosePopover = () => {
+    setAnchorEl(null);
+    setAnchorEl2(null);
+  };
+
+  const handleClickInside = (event) => {
+    event.stopPropagation(); // 팝오버 내부의 이벤트 전파를 중지합니다.
+  };
+
+  // 삭제
+  const handleDelete = async () => {
+    handleClosePopover();
+    const check = await deleteConfirm();
+    if (check === 1) {
+      await deleteBoard(currentBid);
+      if (uid !== undefined) {
+        queryClient.invalidateQueries(['boardmypage', uid]);
+      }
+    }
+  };
+
+
+  // 수정
+  const handleUpdate = () => {
+    handleClosePopover();
+    sessionStorage.setItem("bid", bid);
+    navigate("../home/Update");
+  }
+
+
+  // 신고
+  const handleSiren = async () => {
+    handleClosePopover();
+    console.log('있음?' + activeUser.uid);
+    const check = await Declaration(activeUser.uid);
+    if (check !== 0) {
+      const sendData = {
+        bid: currentBid, uid: activeUser.uid, dTitle: check[0], dContents: check[1]
+      }
+      await insertDeclaration(sendData);
+    }
+  }
+
   return (
     <div>
-      <Box sx={{ width: '50%', minHeight: '1000px' }}>
+      <Box sx={{ width: '100%' }}>
         <Grid container sx={{ padding: '20px' }}>
           <Grid item >
             {/* 헤드라인 */}
@@ -319,12 +398,100 @@ export default function MySearchList() {
                         <CardHeader
                           sx={{ padding: 1 }}
                           avatar={
-                            <Avatar
-                              aria-label="recipe"
+                            <Avatar sx={{ cursor: 'pointer' }}
+                              aria-label="recipe" onClick={() => handleMyPage(data.uid)}
                               src={`https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${data.profile}`}
                             />
                           }
-                          title={<Typography variant="subtitle3" sx={{ fontSize: "15px", color: 'purple' }}>{data.nickname}</Typography>}
+                          action={<>
+                            {
+                              data.uid === activeUser.uid ? (<>
+                                <IconButton aria-label="settings" onClick={(event) => handleClick(event, data.bid)} ref={popperRef}>
+                                  <Icon>more_vert</Icon>
+                                </IconButton>
+                                <Popper
+                                  id={openPopover ? 'simple-popper' : 'close'}
+                                  onClose={handleClosePopover}
+                                  open={openPopover}
+                                  anchorEl={anchorEl}
+                                  placement="bottom-end"
+                                  modifiers={[
+                                    {
+                                      name: 'offset',
+                                      options: {
+                                        offset: [0, 10],
+                                      },
+                                    },
+                                  ]}
+                                >
+                                  <Paper
+                                    style={{
+                                      padding: '0.3rem',
+                                      backgroundColor: 'white',
+                                      boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
+                                      borderRadius: '8px',
+                                    }}
+                                    onClick={(e) => e.stopPropagation()} // 팝오버 내부 클릭 시 이벤트 전파 막기
+                                  >
+                                    <Button
+                                      sx={{
+                                        py: 0,
+                                        pl: 1,
+                                        pr: 1,
+                                        color: 'blue',
+                                        '&:hover': { color: 'blue' },
+                                      }}
+                                      onClick={handleUpdate}
+                                    >
+                                      <Iconify style={{ marginRight: '0.1rem' }} icon="lucide:edit" />수정
+                                    </Button>
+                                    <Button
+                                      sx={{
+                                        py: 0,
+                                        pl: 1,
+                                        pr: 1,
+                                        color: 'red',
+                                        '&:hover': { color: 'red' },
+                                      }}
+                                      onClick={() => handleDelete()}
+                                    >
+                                      <Iconify style={{ marginRight: '0.1rem' }} icon="solar:trash-bin-trash-bold" />삭제
+                                    </Button>
+                                  </Paper>
+                                </Popper>
+                              </>) : <>
+                                <IconButton aria-label="settings" onClick={(event) => handleClick2(event, data.bid)} ref={popperRef} >
+                                  <Icon>more_vert</Icon>
+                                </IconButton>
+                                <Popper
+                                  id={openPopover2 ? 'simple-popper' : 'close'}
+                                  onClose={handleClosePopover}
+                                  open={openPopover2}
+                                  anchorEl={anchorEl2}
+                                  placement="bottom-end"
+                                  modifiers={[
+                                    {
+                                      name: 'offset',
+                                      options: {
+                                        offset: [0, 10],
+                                      },
+                                    },
+                                  ]}
+                                >
+                                  <Paper style={{
+                                    padding: '0.3rem',
+                                    backgroundColor: 'white',
+                                    boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
+                                    borderRadius: '8px',
+                                  }}
+                                    onClick={handleClickInside}>
+                                    <Button onClick={() => handleSiren(data.bid)} sx={{ py: 0, pl: 1, pr: 1, color: 'red', '&:hover': { color: 'red' } }}><Iconify style={{ marginRight: '0.1rem' }} icon="ph:siren-bold" />신고 하기</Button>
+                                  </Paper>
+                                </Popper >
+                              </>
+                            }</>
+                          }
+                          title={<Typography variant="subtitle3" onClick={() => handleMyPage(data.uid)} sx={{ cursor: 'pointer', fontSize: "15px", color: 'purple' }}>{data.nickname}</Typography>}
                         />
 
                         <MDBox padding="1rem">
@@ -392,7 +559,7 @@ export default function MySearchList() {
                               <MDTypography variant="h6" textTransform="capitalize">
                                 {data.title}
                               </MDTypography>
-                              <MDTypography component="div" variant="button" color="text" fontWeight="light" sx={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              <MDTypography component="div" variant="button" color="text" fontWeight="light" sx={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                 {data.bContents}
                               </MDTypography>
                             </button>
@@ -402,7 +569,7 @@ export default function MySearchList() {
                                 <Icon>schedule</Icon>
                               </MDTypography>
                               <MDTypography variant="button" color="text" fontWeight="light">
-                                <TimeAgo datetime={data.modTime} />
+                                <TimeAgo datetime={data.modTime} locale="ko" />
                               </MDTypography>
                             </MDBox>
                           </MDBox>
@@ -423,7 +590,15 @@ export default function MySearchList() {
         </Grid>
       </Box>
       <div id="observe" style={{ display: 'flex', height: '10px' }}></div>
-      <Dialog open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+      <Dialog open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description"
+        PaperProps={{
+          sx: {
+            width: '90%', // 원하는 너비 퍼센트로 설정
+            height: '80vh', // 원하는 높이 뷰포트 기준으로 설정
+            maxWidth: 'none', // 최대 너비 제한 제거
+            zIndex: 0
+          },
+        }}>
         <BoardDetail bid={bid} uid={uid} handleClose={handleClose} nickname={nickname} handleButtonLike={handleButtonLike} />
       </Dialog>
       <Footer />

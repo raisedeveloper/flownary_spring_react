@@ -142,45 +142,54 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const email = GetWithExpiry("email");
   const nickname = GetWithExpiry("nickname");
   const uname = GetWithExpiry("uname");
-  const profile = GetWithExpiry("profile");
+  const profile = GetWithExpiry("profile") ? GetWithExpiry("profile") : null;
   const [location, setLocation] = useState('');
 
-  // const user = useQuery({
-  //   queryKey: ['user', uid],
-  //   queryFn: () => getUser(uid),
-  // });
+  const user = useQuery({
+    queryKey: ['user', uid],
+    queryFn: () => getUser(uid),
+  });
 
-  // useEffect(() => {
-  //   if (user && user.data && user.data.location) {
-  //     setLocation(user.data.location);
-  //   }
-  // }, [user])
+  useEffect(() => {
+    if (user && user.data && user.data.location) {
+      setLocation(user.data.location);
+    }
+  }, [user])
 
-  // const [weather, setWeather] = useState('');
+  const [weather, setWeather] = useState('');
+  const [weatherDataFetched, setWeatherDataFetched] = useState(false);
+  // API 가져오기
+  const getWeatherByCoordinates = async (lat, lon) => {
+    try {
+      const res = await axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?lang=kr&lat=${lat}&lon=${lon}&appid=${process.env.REACT_APP_API_KEY}&units=metric`
+      );
+      console.log("날씨" + res);
+      // id 찾아서 매칭 후 description 한글 번역된 거 가져오기
+      const weatherId = res.data.weather[0].id;
+      const weatherKo = weatherDescKo[weatherId];
+      // 날씨 아이콘 가져오기
+      const weatherIcon = res.data.weather[0].icon;
+      const weatherIconAdrs = `http://openweathermap.org/img/wn/${weatherIcon}@2x.png`;
+      // 소수점 버리기
+      const temp = Math.round(res.data.main.temp);
+      setWeather({
+        description: weatherKo,
+        temp: temp,
+        links: weatherIconAdrs,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  // // API 가져오기
-  // const getWeatherByCoordinates = async (lat, lon) => {
-  //   try {
-  //     const res = await axios.get(
-  //       `https://api.openweathermap.org/data/2.5/weather?lang=kr&lat=${lat}&lon=${lon}&appid=${process.env.REACT_APP_API_KEY}&units=metric`
-  //     );
-  //     // id 찾아서 매칭 후 description 한글 번역된 거 가져오기
-  //     const weatherId = res.data.weather[0].id;
-  //     const weatherKo = weatherDescKo[weatherId];
-  //     // 날씨 아이콘 가져오기
-  //     const weatherIcon = res.data.weather[0].icon;
-  //     const weatherIconAdrs = `http://openweathermap.org/img/wn/${weatherIcon}@2x.png`;
-  //     // 소수점 버리기
-  //     const temp = Math.round(res.data.main.temp);
-  //     setWeather({
-  //       description: weatherKo,
-  //       temp: temp,
-  //       links: weatherIconAdrs,
-  //     });
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
+  const handleLocationChange = (lat, lon) => {
+    // 처음 한 번만 실행되고, 그 후에는 실행되지 않도록 합니다.
+    if (!weatherDataFetched) {
+      getWeatherByCoordinates(lat, lon);
+      setWeatherDataFetched(true); // 날씨 데이터를 가져왔음을 표시합니다.
+    }
+  };
 
   useEffect(() => {
     // 네비바 타입 설정
@@ -234,7 +243,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
           px={0.5} py={1}
         >
           {/* 프로필 사진*/}
-          <Avatar
+          {profile && <Avatar
             alt="profile picture"
             sx={{
               width: '3rem',
@@ -255,7 +264,8 @@ function DashboardNavbar({ absolute, light, isMini }) {
             >
             </div>
 
-          </Avatar>
+          </Avatar>}
+          
           <MDBox ml={1.75}>
             <div style={{ fontWeight: 'bold', fontSize: '15px' }}>{nickname}</div>
             <div style={{ marginLeft: '.125rem', fontSize: '12px' }}>{email}</div>
@@ -360,13 +370,13 @@ function DashboardNavbar({ absolute, light, isMini }) {
       color="inherit"
       sx={(theme) => navbar(theme, { transparentNavbar, absolute, light, darkMode })}
     >
-      {/* <MapComponent location={location} onLocationChange={(lat, lon) => getWeatherByCoordinates(lat, lon)} /> */}
+      <MapComponent location={location} onLocationChange={(lat, lon) => handleLocationChange(lat, lon)} />
       <Toolbar sx={(theme) => navbarContainer(theme)}>
         <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
           <Breadcrumbs icon="yard" title={route[route.length - 1]} route={route} light={light} />
         </MDBox>
         {/* 헤더 박스 및 계정, 설정, 알림 아이콘 모양 */}
-        {/* {isMini ? null : (
+        {isMini ? null : (
           <MDBox sx={(theme) => navbarRow(theme, { isMini })}>
             <Stack direction="column" sx={{ flex: 0.5 }}>
               <MDBox mt={1} mr={2} sx={{ position: 'sticky', top: "8%" }}>
@@ -410,7 +420,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
                         </MDTypography>
                         <Avatar sx={{ width: 100, height: 100 }} src={weather.links} alt="날씨 아이콘" />
                         <CardContent sx={{ fontSize: 'large', fontWeight: 'bolder' }}>
-                          {location}:  {weather.temp}℃  
+                          {location}:  {weather.temp}℃
                           <br />
                           {weather.description}
                         </CardContent>
@@ -463,7 +473,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
               {renderProfileMenu()}
             </MDBox>
           </MDBox>
-        )} */}
+        )}
       </Toolbar>
     </AppBar >
   );

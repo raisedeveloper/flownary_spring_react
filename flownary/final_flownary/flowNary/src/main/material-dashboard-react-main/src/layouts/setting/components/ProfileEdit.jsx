@@ -182,7 +182,7 @@ function ProfileEdit({ uid, email }) {
           <CardContent>
             <Grid container spacing={5}>
               <Grid item xs={12} sm={6}>
-                <MDBox fullWidth id="gender_select" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <MDBox id="gender_select" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                   <Select
                     id="gender_select"
                     value={gender}

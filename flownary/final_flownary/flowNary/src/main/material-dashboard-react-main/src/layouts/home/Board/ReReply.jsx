@@ -140,14 +140,14 @@ export default function ReReply(props) {
                       marginTop: 0.25,
                       marginLeft: 2.5,
                     }}>
-                    <Avatar sx={{ cursor: 'pointer',  width: 0.04, height: 0.04 }}
+                    <Avatar sx={{ cursor: 'pointer', width: '1.5rem', height: '1.5rem' }}
                       onClick={() => handleMyPage(data.uid)} src={`https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${data.profile}`}
                     />
                     <ListItemText sx={{ paddingLeft: 1 }}
                       primary={<Typography variant="subtitle3" sx={{ fontSize: "15px", color: 'black', cursor: 'pointer' }} onClick={() => handleMyPage(data.uid)}>{data.nickname}</Typography>}
                       secondary={
                         // 댓글 내용
-                        <Typography variant="body1" color="text.primary" sx={{ overflowWrap: 'break-word', fontSize:'small' }}>
+                        <Typography variant="body1" color="text.primary" sx={{ overflowWrap: 'break-word', fontSize: 'small' }}>
                           {data.rrContents != null && (expandedContents[index] ? data.rrContents : data.rrContents.slice(0, 28))}
                           {data.rrContents != null && data.rrContents.length > 30 && !expandedContents[index] && (
                             <button className='replyOpen' onClick={() => toggleExpand(index)}>...더보기</button>
@@ -163,9 +163,9 @@ export default function ReReply(props) {
                   </ListItem>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <span style={{ color: 'grey', fontSize: '14px', paddingLeft: 50, }} >  <TimeAgo datetime={data.modTime} locale='ko' />ㆍ</span>
-                    <Button sx={{ color: 'lightcoral', padding: 0 }} onClick={() => handleButtonLikeReReply(data.rrid, data.uid)} >좋아요 {data.likeCount}개 {data.liked ?
+                    <Button sx={{ color: 'lightcoral', padding: 0, '&:hover, &:active, &:visited, &:link': { color: 'lightcoral' } }} onClick={() => handleButtonLikeReReply(data.rrid, data.uid)} >좋아요 {data.likeCount}개 {data.liked ?
                       <FavoriteIcon sx={{ color: 'lightcoral' }} /> : <FavoriteBorderIcon sx={{ color: 'lightcoral' }} />}</Button>
-                    {data.uid === activeUser.uid && <Button onClick={() => handleDelete(data.rrid)} sx={{ color: 'lightcoral', padding: 0 }}>삭제</Button>}
+                    {data.uid === activeUser.uid && <Button onClick={() => handleDelete(data.rrid)} sx={{ color: 'lightcoral', padding: 0, '&:hover, &:active, &:visited': { color: 'lightcoral' } }}>삭제</Button>}
                   </div>
 
                   {/* 답글 목록 */}

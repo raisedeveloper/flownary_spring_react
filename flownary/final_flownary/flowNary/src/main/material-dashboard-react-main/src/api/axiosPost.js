@@ -395,19 +395,54 @@ export const deleteDm = async (did: number) => {
 }
 
 
-
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////알림/////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-/** 특정 유저의 모든 알림 비활성화
- * @param {*} uid 유저 번호
+//////////////////////////////////////////////////////////////////////////////
+// 수정사항 : 알림은 deleteNotice 추가, deleteNoticeSpecific 추가, deleteNoticeAll 수정
+//////////////////////////////////////////////////////////////////////////////
+/** 특정 번호의 알림 삭제
+ * @param {*} nid 알림 번호
+ */
+export const deleteNotice = async (nid: number) => {
+
+    return axios.post(`/notice/remove`, {
+        nid: nid,
+    }).catch(error => {
+        console.log('axiospost.js: deleteNotice error!');
+        console.log(error);
+    });
+}
+
+/** 특정 유저의 특정 유형과 오브젝트의 알림 삭제
+ * @param {*} uid 알림을 보유한 유저 번호
+ * @param {*} type 알림 유형 (알림을 보내는 오브젝트 종류에 따라 달라짐)
+ * @param {*} oid 알림의 대상이 되는 오브젝트 번호(글이면 bid 등)
  * @returns 
  */
-export const deleteNoticeAll = async (uid: number) => {
+export const deleteNoticeSpecific = async (uid: number, type: number, oid: number) => {
+
+    return axios.post(`/notice/removeSpecific`, {
+        uid: uid,
+        type: type,
+        oid: oid,
+    }).catch(error => {
+        console.log('axiospost.js: deleteNoticeSpecific error!');
+        console.log(error);
+    });
+}
+
+/** 특정 유저의 모든 알림 비활성화 or 삭제
+ * @param {*} uid 유저 번호
+ * @param {*} type 유형 (0: 비활성화, 1: 삭제)
+ * @returns 
+ */
+export const deleteNoticeAll = async (uid: number, type = 0) => {
 
     return axios.post(`/notice/removeAll`, {
         uid: uid,
+        type: type,
     }).catch(error => {
         console.log('axiospost.js: deleteNoticeAll error!');
         console.log(error);
@@ -568,7 +603,7 @@ export const insertFollow = async (uid: number, fuid: number) => {
             console.log('axiospost.js: insertFollow error!');
             console.log(error);
         });
-
+    console.log('머로오냐' + result);
     return result;
 }
 

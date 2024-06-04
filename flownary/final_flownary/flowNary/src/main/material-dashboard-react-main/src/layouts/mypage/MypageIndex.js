@@ -50,8 +50,12 @@ import { UpdateDisabledRounded } from "@mui/icons-material";
 import { getChatCid } from "api/axiosGet.js";
 import FollowMeList from "./FollowmeList.jsx";
 import FollowList from "./FollowList.jsx";
+import { insertFollow } from "api/axiosPost.js";
+import { correct } from "api/alert.jsx";
+import { getFollowMeList } from "api/axiosGet.js";
+import { getFollowList } from "api/axiosGet.js";
 
-function mypage() {
+function Mypage() {
 
   const queryClient = new QueryClient();
   timeago.register('ko', ko);
@@ -77,7 +81,7 @@ function mypage() {
 
   const [changepage, setChangepage] = useState(true);
   const [currentBid, setCurrentBid] = useState(null);
-
+  const [itemCount, setItemCount] = useState(0);
   // 게시물 사진 , 글영역
   const [showPhoto, setShowPhoto] = useState(false);
   const [expanded, setExpanded] = useState({});
@@ -96,6 +100,18 @@ function mypage() {
     queryKey: ['mypageuser', uid],
     queryFn: () => getUser(uid),
   });
+
+  const followMeListCount = useQuery({
+    queryKey: ['followMelistcount', uid],
+    queryFn: () => getFollowMeList(uid),
+  });
+
+  const followListCount = useQuery({
+    queryKey: ['followlistcount', uid],
+    queryFn: () => getFollowList(uid),
+  });
+
+  const boardList = board ? board : [];
 
   const handleOpen = (e) => {
     setOpen(true);
@@ -133,6 +149,7 @@ function mypage() {
       ...prevExpanded,
       [bid]: !prevExpanded[bid]
     }));
+
   };
 
   function handleButtonLike(bid, uid2) {
@@ -176,15 +193,6 @@ function mypage() {
     addLikeForm(sendData);
 
   }
-  const alertContent = (name) => (
-    <MDTypography variant="body2" color="white">
-      A simple {name} alert with{" "}
-      <MDTypography component="a" href="#" variant="body2" fontWeight="medium" color="white">
-        an example link
-      </MDTypography>
-      . Give it a click if you like.
-    </MDTypography>
-  );
 
   const toggleBoard = () => {
     if (!showBoard) {
@@ -214,8 +222,6 @@ function mypage() {
 
   const openPopover = Boolean(anchorEl);
   const openPopover2 = Boolean(anchorEl2);
-  // const id = openPopover ? 'simple-popper' : 'close';
-  // const id2 = openPopover ? 'simple-popper' : 'close';
   const popperRef = useRef(null);
   const [confirm, setConfirm] = useState('');
 
@@ -282,121 +288,167 @@ function mypage() {
     console.log(d);
   };
 
-  if (board.isLoading || user.isLoading) {
-    return (
-      <div>Loading</div>
-    )
-  }
 
   const findChatMake = async (uid) => {
-    if (uid && uid == activeUser.uid)
-      return;
-
     const cid = await getChatCid(uid, activeUser.uid);
 
     if (cid == -1) {
       navigate("/chattingtemp", { state: { uid1: activeUser.uid, uid2: uid } });
     }
     else {
-      navigate("/chatting", { state: { cid: cid } });
+      navigate("/chatlist", { state: { cid: cid } });
     }
+  }
+
+  /// 팔로우
+  const handleFollow = async (uid, fuid) => {
+    const define = await insertFollow(uid, fuid);
+    if (define === 1) {
+      correct('플로우 되었습니다!');
+    } else {
+      correct('언플로우 되었습니다!');
+    }
+  }
+
+  if (board.isLoading || user.isLoading) {
+    return (
+      <div>Loading</div>
+    )
   }
 
   return (
     <DashboardLayout>
       <DashboardNavbar />
       {/* 상단 정보 넣는 Stack 태그 */}
-      <Stack direction={'row'} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}> {/* 방향을 row로 지정하면 가로 방향으로 배치됨 */}
-
+      <Stack direction={'row'} sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start' }}> {/* 방향을 row로 지정하면 가로 방향으로 배치됨 */}
         {/* Avatar 태그 : 유튜브 프사처럼 동그란 이미지 넣을 수 있는 것 */}
-        <Avatar
-          sx={{
-            width: '9rem',
-            height: '9rem',
-            margin: '10px',
-            fontSize: '60px',
-            border: '2px solid primary.main', // 외곽선 색과 굵기 지정
-          }} >
-          {user && user.data &&
-            <div
-              style={{
-                width: '9rem',
-                height: '9rem',
-                borderRadius: '50%',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundImage: `url('https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${user.data.profile}')` // 이미지 URL 동적 생성
-              }}
-            >
-            </div>}
-        </Avatar>
-
-        {/* 프사 옆 정보와 팔로우 버튼 만드는 Stack 공간 */}
-        <Stack sx={{ padding: '20px' }} fontWeight={'bold'}>
-          <Stack direction={'row'} spacing={2} sx={{ marginTop: '10px', marginBottom: '15px', display: 'flex', justifyContent: 'space-between' }}>
-            <Typography variant="h4" fontWeight={'bold'}>
-              {user.data.nickname}
-            </Typography>
-            {/* <Button onClick={handleCheckingPwd}><SettingsIcon sx={{ fontSize: '50px', color: 'darkgray' }} /></Button> */}
+        <Stack direction={'column'}>
+          <Avatar
+            sx={{
+              width: '12rem',
+              height: '12rem',
+              margin: '1rem',
+              mr: 10,
+              fontSize: '60px',
+              border: '2px solid primary.main', // 외곽선 색과 굵기 지정
+            }} >
+            {user && user.data &&
+              <div
+                style={{
+                  width: '12rem',
+                  height: '12rem',
+                  borderRadius: '50%',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundImage: `url('https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${user.data.profile}')` // 이미지 URL 동적 생성
+                }}
+              >
+              </div>}
+          </Avatar>
+        </Stack>
+        <Stack direction={'column'}>
+          <Stack direction={'row'}>
+            {/* 프사 옆 정보와 팔로우 버튼 만드는 Stack 공간 */}
+            <Grid container sx={{ width: '30vw', display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', mt: 0 }}>
+              <Grid item xs={3.5}>
+                <Typography fontWeight={'bold'}>
+                  {user.data.nickname}
+                </Typography>
+              </Grid>
+              {activeUser.uid !== uid ? <>
+                <Grid item xs={3}>
+                  <Box sx={{ cursor: 'pointer', my: 0, py: 0, mx: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid rgba(10, 10, 10, 0.3)', color: ' rgba(10, 10, 10, 0.6)', borderRadius: 20, '&:hover': { backgroundColor: 'lightcoral', border: '1px solid rgb(255, 255, 255)', color: 'rgb(255, 255, 255)' } }} onClick={() => handleFollow(activeUser.uid, user.data.id)}>
+                    <Typography fontSize={'large'}>
+                      플로우
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={3}>
+                  <Box sx={{ cursor: 'pointer', my: 0, py: 0, mx: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid rgba(10, 10, 10, 0.3)', color: ' rgba(10, 10, 10, 0.6)', borderRadius: 20, '&:hover': { backgroundColor: 'lightcoral', border: '1px solid rgb(255, 255, 255)', color: 'rgb(255, 255, 255)' } }} onClick={() => findChatMake(user.data.id)}>
+                    <Typography fontSize={'large'}>
+                      메시지
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={2.5}>
+                </Grid>
+              </> : <>
+                <Grid item xs={8.5}>
+                </Grid>
+              </>}
+              <Grid item xs={4}>
+                <Button sx={{ cursor: 'default', fontSize: 'large', mx: 0, mt: 3, p: 0 }} style={{ color: 'lightcoral' }}>
+                  <Typography fontSize={'large'} sx={{ mr: 1 }}>
+                    게시물
+                  </Typography>
+                  <Typography fontSize={'large'} sx={{ mr: 1, fontWeight: 'bold' }}>
+                    {board.data.length}
+                  </Typography>
+                </Button>
+              </Grid>
+              <Grid item xs={4}>
+                <Button sx={{ fontSize: 'large', cursor: 'pointer', mx: 0, mt: 3, p: 0 }} style={{ color: 'lightcoral' }} onClick={() => handleOpen3('팔로워', '여기에 팔로워 수에 대한 정보를 표시')}>
+                  <Typography fontSize={'large'} sx={{ mr: 1 }}>
+                    플로워
+                  </Typography>
+                  <Typography fontSize={'large'} sx={{ mr: 1, fontWeight: 'bold' }}>
+                    {followMeListCount.data ? followMeListCount.data.length : 0}
+                  </Typography>
+                </Button>
+              </Grid>
+              <Grid item xs={4}>
+                <Button sx={{ fontSize: 'large', cursor: 'pointer', mx: 0, mt: 3, p: 0 }} style={{ color: 'lightcoral' }} onClick={() => handleOpen2('팔로잉', '여기에 팔로잉 수에 대한 정보를 표시')}>
+                  <Typography fontSize={'large'} sx={{ mr: 1 }}>
+                    플로잉
+                  </Typography>
+                  <Typography fontSize={'large'} sx={{ mr: 1, fontWeight: 'bold' }}>
+                    {followListCount.data ? followListCount.data.length : 0}
+                  </Typography>
+                </Button>
+              </Grid>
+            </Grid>
           </Stack>
-          <Stack direction={'row'} spacing={2} sx={{ marginTop: '10px', marginBottom: '15px' }}>
-            <Box sx={{ cursor: 'pointer' }} >
-              게시물 수
-            </Box>
-            <Box sx={{ cursor: 'pointer' }} onClick={() => handleOpen3('팔로워', '여기에 팔로워 수에 대한 정보를 표시')}>
-              팔로워 
-            </Box>
-            <Box sx={{ cursor: 'pointer' }} onClick={() => handleOpen2('팔로잉', '여기에 팔로잉 수에 대한 정보를 표시')}>
-              팔로잉 
-            </Box>
-          </Stack>
-          <Stack direction={'row'} spacing={2}>
-            <Button color="primary" className='msg_button' style={{ border: "3px solid #BA99D1" }} sx={{ width: '50%' }}>팔로우</Button>
-            <Button color="primary" className='msg_button' style={{ border: "3px solid #BA99D1" }} sx={{ width: '70%' }} onClick={() => findChatMake(user.data.id)}>메시지</Button>
-
-            {/* <Button variant="outlined" color="secondary" className='msg_button' sx={{ width: '130px' }} onClick={handlePwd}>비밀번호 변경</Button> */}
+          <Stack direction={'row'}>
+            <Grid container sx={{ width: '150%', display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', mt: 0 }}>
+              <Grid item xs={12}>
+                <Typography fontSize={'medium'}>
+                  {user.data.uname}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} fontWeight={'none'}>
+                <Typography fontSize={'medium'}>
+                  {user.data.statusMessage}
+                </Typography>
+              </Grid>
+            </Grid>
           </Stack>
         </Stack>
-        <Stack direction={'column'} spacing={2} sx={{ marginTop: '10px', marginBottom: '15px' }}>
-        </Stack>
-      </Stack >
-      {/* <FollowerModal open={followerModalOpen} handleClose={handleClose} content={modalContent} />
-      <SettingModal open={SettingModalOpen} handleClose={handleClose} /> */}
-
-      {/* 소개문 넣는 Stack */}
-      <Stack sx={{ paddingLeft: '30px', paddingRight: '30px' }}>
-        {/* <Link href={user.snsDomain}>{user.snsDomain}</Link> */}
-        {/* {user.statusMessage} */}
       </Stack>
+      {/* 소개문 넣는 Stack */}
       <Divider sx={{ marginTop: '20px', marginBottom: '10px' }}></Divider>
       {/* 게시물과 태그 넣는 거 생성 */}
       <Stack direction="row" justifyContent="center" alignItems='center' spacing={5} sx={{ mt: 2 }}>
         <Stack direction="row" sx={{ cursor: 'pointer' }}>
-          <SubjectIcon sx={{ fontSize: 'large' }} style={{ color: showBoard ? 'red' : 'rgb(0,0,0)' }} />
+          <SubjectIcon sx={{ fontSize: 'large' }} style={{ color: showBoard ? 'lightcoral' : 'rgb(0,0,0)' }} />
           <Typography onClick={toggleBoard} sx={{ fontSize: 'large' }}>게시물</Typography>
         </Stack>
         {uid === activeUser.uid &&
           <Stack direction="row" sx={{ cursor: 'pointer' }}        >
-            <Icon sx={{ fontSize: 'large' }} style={{ color: showLikes ? 'red' : 'rgb(0,0,0)' }}>favorite</Icon>
+            <Icon sx={{ fontSize: 'large' }} style={{ color: showLikes ? 'lightcoral' : 'rgb(0,0,0)' }}>favorite</Icon>
             <Typography onClick={toggleLikes} sx={{ fontSize: 'large' }} >좋아요</Typography>
           </Stack>}
       </Stack>
       <br />
       {/* 게시물 표시하는 Grid */}
-      {showBoard &&
+      {
+        showBoard &&
         <Grid container spacing={1} sx={{ position: 'relative' }}>
           <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1, mr: 3 }}>
-            <GridViewIcon onClick={hanldlePhotoButton} sx={{ cursor: 'pointer', mr: 2 }} />
-            <DehazeIcon onClick={hanldlePhotoButton2} sx={{ cursor: 'pointer' }} />
+            <GridViewIcon onClick={hanldlePhotoButton} sx={{ cursor: 'pointer', mr: 2, color: !showPhoto ? 'lightcoral' : null }} />
+            <DehazeIcon onClick={hanldlePhotoButton2} sx={{ cursor: 'pointer', color: showPhoto ? 'lightcoral' : null }} />
           </Grid>
           {!showPhoto ?
             (board && board.data && board.data.map((data, idx) => {
-              const modTime = data.modTime;
-              if (!modTime) return null; // modTime이 없으면 건너뜁니다.
-
-              const yearFromModTime = new Date(modTime).getFullYear(); // modTime에서 연도를 추출합니다.
-              if (yearFromModTime !== selectedYear) return null; // 선택한 연도와 다른 경우 건너뜁니다.
-
               return (
                 <Grid key={idx} item xs={3}>
                   <MDBox mb={3}>
@@ -407,7 +459,7 @@ function mypage() {
                         boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.2)', // 추가: 호버 시 그림자 효과
                       }
                     }}>
-                      <MDBox padding="1rem">
+                      <MDBox >
                         {data.image &&
                           <MDBox onClick={handleOpen.bind(null, data.bid)}
                             variant="gradient"
@@ -562,7 +614,7 @@ function mypage() {
                                 {data.bContents}
                               </MDTypography>
                             ) : (
-                              <MDTypography component="div" variant="button" color="text" fontWeight="light" sx={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              <MDTypography component="div" variant="button" color="text" fontWeight="light" sx={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                 {data.bContents}
                               </MDTypography>
                             )}
@@ -578,21 +630,25 @@ function mypage() {
                             </MDTypography>
                           </MDBox>
                         </MDBox>
-                        <Button onClick={() => handlePublicButton(data.bid, data.isDeleted)}>
-                          <Typography sx={{ marginRight: '1em', fontSize: 'small', fontWeight: 'bold' }} style={{ color: 'black' }}>
-                            {data.isDeleted == 0 ? '공개' : '비공개'}
-                          </Typography>
-                          <AntSwitch sx={{ marginTop: '0.25em' }} checked={data.isDeleted == 0} inputProps={{ 'aria-label': 'ant design' }} />
-                        </Button>
+                        {uid === activeUser.uid &&
+                          < Button onClick={() => handlePublicButton(data.bid, data.isDeleted)}>
+                            <Typography sx={{ marginRight: '1em', fontSize: 'small', fontWeight: 'bold' }} style={{ color: 'black' }}>
+                              {data.isDeleted == 0 ? '공개' : '비공개'}
+                            </Typography>
+                            <AntSwitch sx={{ marginTop: '0.25em' }} checked={data.isDeleted == 0} inputProps={{ 'aria-label': 'ant design' }} />
+                          </Button>
+                        }
                       </MDBox>
                     </Card>
                   </MDBox>
                 </Grid>
-              ))}
-        </Grid>
+              ))
+          }
+        </Grid >
       }
 
-      {uid === activeUser.uid && showLikes &&
+      {
+        uid === activeUser.uid && showLikes &&
         <Grid container spacing={1} sx={{ position: 'relative' }}>
           <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1, mr: 3 }}>
             <GridViewIcon onClick={hanldlePhotoButton} sx={{ cursor: 'pointer', mr: 2 }} />
@@ -600,12 +656,6 @@ function mypage() {
           </Grid>
           {!showPhoto ?
             (likes && likes.data && likes.data.map((data, idx) => {
-              const modTime = data.modTime;
-              if (!modTime) return null; // modTime이 없으면 건너뜁니다.
-
-              const yearFromModTime = new Date(modTime).getFullYear(); // modTime에서 연도를 추출합니다.
-              if (yearFromModTime !== selectedYear) return null; // 선택한 연도와 다른 경우 건너뜁니다.
-
               return (
                 <Grid key={idx} item xs={3}>
                   <MDBox mb={3}>
@@ -787,7 +837,7 @@ function mypage() {
                               {data.bContents}
                             </MDTypography>
                           ) : (
-                            <MDTypography component="div" variant="button" color="text" fontWeight="light" sx={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            <MDTypography component="div" variant="button" color="text" fontWeight="light" sx={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                               {data.bContents}
                             </MDTypography>
                           )}
@@ -808,7 +858,8 @@ function mypage() {
                 </MDBox>
               </Grid>
             ))}
-        </Grid>}
+        </Grid>
+      }
       <br />
       <Footer />
       <Dialog
@@ -819,7 +870,7 @@ function mypage() {
         keepMounted
         PaperProps={{
           sx: {
-            width: '60%', // 원하는 너비 퍼센트로 설정
+            width: '90%', // 원하는 너비 퍼센트로 설정
             height: '80vh', // 원하는 높이 뷰포트 기준으로 설정
             maxWidth: 'none', // 최대 너비 제한 제거
           },
@@ -883,10 +934,10 @@ function mypage() {
           }} >
           <CloseIcon />
         </IconButton>
-        <FollowMeList uid={uid} />
+        <FollowMeList uid={uid} handleClose3={handleClose3} />
       </Dialog>
     </DashboardLayout >
   );
 }
 
-export default mypage;
+export default Mypage;

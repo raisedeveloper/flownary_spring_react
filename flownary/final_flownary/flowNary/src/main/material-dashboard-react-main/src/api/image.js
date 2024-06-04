@@ -32,6 +32,10 @@ export async function UploadImage(image) {
 }
 
 export function FindImage(url) {
+    if (!url)
+        {
+            return null;
+        }
     const cld = new Cloudinary({
         cloud: {
             cloudName: process.env.REACT_APP_CLOUDINARY_CLOUD_NAME

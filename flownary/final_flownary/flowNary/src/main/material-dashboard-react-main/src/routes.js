@@ -5,13 +5,11 @@ import Icon from '@mui/material/Icon';
 // Material Dashboard 2 React layouts
 import Home from "layouts/home/HomeIndex.js";
 import Album from "layouts/album/AlbumIndex.js";
-import Chatting from "layouts/chatting/ChattingIndex.js";
 import ChatList from "layouts/chatting/Chattinglist.js";
 import ChatTemp from 'layouts/chatting/Chattingtemp.js';
 import Mypage from "layouts/mypage/MypageIndex.js";
 import Family from "layouts/family/FamilyIndex.js";
 import Notifications from "layouts/notifications/NoticeIndex.js";
-import Write from "layouts/write/WriteIndex.js";
 import Settings from "layouts/setting/SettingIndex.js";
 import VerifySettings from 'layouts/setting/components/SettingCheckPwd';
 import Team from "layouts/team/TeamIndex.js";
@@ -56,15 +54,6 @@ const createRoutes = (isLoggedIn, isAdmin) => [
   },
   {
     type: "collapse",
-    name: "채팅내부",
-    key: "chatting",
-    icon: <Icon fontSize="xx-large">send</Icon>,
-    route: "/chatting",
-    component: <Chatting />,
-    visible: false,
-  },
-  {
-    type: "collapse",
     name: "임시채팅",
     key: "chattingtemp",
     icon: <Icon fontSize="xx-large">send</Icon>,
@@ -92,7 +81,7 @@ const createRoutes = (isLoggedIn, isAdmin) => [
   },
   {
     type: "collapse",
-    name: "팔로우",
+    name: "플로우",
     key: "follow",
     icon: <Icon fontSize="xx-large">people</Icon>,
     route: "/follow",
@@ -106,15 +95,6 @@ const createRoutes = (isLoggedIn, isAdmin) => [
     icon: <Icon fontSize="xx-large">notifications</Icon>,
     route: "/notifications",
     component: <Notifications />,
-    visible: true,
-  },
-  {
-    type: "collapse",
-    name: "글쓰기",
-    key: "write",
-    icon: <Icon fontSize="xx-large">history_edu</Icon>,
-    route: "/write",
-    component: <Write />,
     visible: true,
   },
   {

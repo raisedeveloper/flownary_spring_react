@@ -106,7 +106,7 @@ export default function SettingTel(props) {
               label="전화번호"
               variant="standard"
               name="tel"
-              value={tel || null}
+              value={tel || ''}
               onChange={handleTel}
               sx={{ mt: 2, width: '100%' }}
             />

@@ -13,6 +13,8 @@ import {
   IconButton,
   List,
   ListItem,
+  Paper,
+  Box,
 } from "@mui/material";
 import Done from "@mui/icons-material/Done";
 import MDBox from "components/MDBox";
@@ -144,24 +146,17 @@ export default function TodoList() {
       addItem();
     }
   }
-
-  const formatTextWithLineBreaks = (text, maxLength) => {
-    let result = "";
-    for (let i = 0; i < text.length; i += maxLength) {
-      result += text.slice(i, i + maxLength) + "\n\n";
+  function handleUpdateConfirmKey(event, idx, tid, pri) {
+    if (event && event.key === "Enter") {
+      event.preventDefault();
+      handleUpdateConfirm(idx, tid, pri);
     }
-    return result.trim();
-  };
+  }
+
 
   return (
     <>
-      <MDBox px={3} mt={7}>
-        <MDTypography variant="h6" fontWeight="medium">
-          To do
-        </MDTypography>
-      </MDBox>
-
-      <MDBox pt={3} px={3}>
+      <MDBox px={3}>
         <FormGroup>
           {dataList &&
             dataList.map((item, idx) => (
@@ -178,30 +173,35 @@ export default function TodoList() {
                 <Grid item xs={11}>
                   {!updateStates[idx] ? (
                     <>
-                      <FormControlLabel
-                        control={<Checkbox checked={item.pri === 1} onChange={() => handleCheckboxChange(idx)} />}
-                        label={
-                          <pre
-                            style={{
+                      <Grid container>
+                        <Grid item xs={2}>
+                          <Checkbox checked={item.pri === 1} onChange={() => handleCheckboxChange(idx)} />
+                        </Grid>
+                        <Grid item xs={10} sx={{
+                          display: "flex",
+                          alignItems: "center",
+                        }}>
+                          <Typography
+                            sx={{
                               display: "flex",
                               alignItems: "center",
-                              whiteSpace: "pre-wrap",
-                              wordBreak: "break-word",
+
                             }}
+                            variant="body2"
                           >
-                            {formatTextWithLineBreaks(item.contents, 16)}
-                          </pre>
-                        }
-                      />
+                            {item.contents}
+                          </Typography>
+                        </Grid>
+                      </Grid>
                     </>
                   ) : (
                     <>
                       <TextField
                         value={updateText}
                         onChange={(e) => handleUpdateText(idx, e)}
+                        onKeyUp={(event) => handleUpdateConfirmKey(event, idx, item.tid, item.pri)}
                         sx={{ width: "60%" }}
                         variant="outlined"
-                        fullWidth
                       />
                       <Button
                         color="info"
@@ -233,31 +233,37 @@ export default function TodoList() {
                         style: {
                           marginRight: 90,
                           backgroundColor: "white",
-                          width: "8rem",
+                          border: 'none',
+                          boxShadow: 'none',
+                          width: "6rem",
                         },
                       }}
                     >
-                      <List>
-                        <ListItem onClick={() => handleCheckboxChange(idx)}>
-                          <Iconify icon="icon-park:check-correct" style={{ marginRight: 2 }} />
-                          완료
-                        </ListItem>
-                        <ListItem onClick={() => updateItem(idx, item.contents)}>
-                          <Iconify icon="lucide:edit" style={{ marginRight: 2 }} />
-                          수정
-                        </ListItem>
-                        <ListItem onClick={() => removeItem(item.tid)} sx={{ color: "error.main" }}>
-                          <Iconify icon="solar:trash-bin-trash-bold" style={{ marginRight: 2 }} />
-                          삭제
-                        </ListItem>
-                      </List>
+                      <Box sx={{
+                        backgroundColor: 'white',
+                        boxShadow: '0px 3px 5px rgba(0, 0, 0, 0.2)',
+                        borderRadius: '8px',
+                      }}>
+                        <IconButton sx={{ display: 'flex', alignItems: 'center' }} onClick={() => handleCheckboxChange(idx)}>
+                          <Iconify icon="icon-park:check-correct" style={{ marginLeft: 2 }} />
+                          <Typography sx={{ fontSize: 'small' }}>완료</Typography>
+                        </IconButton>
+                        <IconButton sx={{ display: 'flex', alignItems: 'center' }} onClick={() => updateItem(idx, item.contents)}>
+                          <Iconify icon="lucide:edit" style={{ marginLeft: 2 }} />
+                          <Typography sx={{ fontSize: 'small' }}>수정</Typography>
+                        </IconButton>
+                        <IconButton sx={{ display: 'flex', alignItems: 'center', color: "error.main" }} onClick={() => removeItem(item.tid)}>
+                          <Iconify icon="solar:trash-bin-trash-bold" style={{ marginLeft: 2 }} />
+                          <Typography sx={{ fontSize: 'small' }}>삭제</Typography>
+                        </IconButton>
+                      </Box>
                     </Popover>
                   </div>
                 </Grid>
               </Grid>
             ))}
         </FormGroup>
-      </MDBox>
+      </MDBox >
 
       <Grid sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 3 }}>
         <Grid>
@@ -282,9 +288,9 @@ export default function TodoList() {
 TodoList.propTypes = {
   dataList: PropTypes.arrayOf(
     PropTypes.shape({
-      tid: PropTypes.number.isRequired,
-      contents: PropTypes.string.isRequired,
-      pri: PropTypes.number.isRequired,
+      tid: PropTypes.number,
+      contents: PropTypes.string,
+      pri: PropTypes.number,
     })
   ),
   updateStates: PropTypes.arrayOf(PropTypes.bool),
@@ -302,3 +308,5 @@ TodoList.defaultProps = {
   newItemText: "",
   updateText: "",
 };
+
+TodoList.displayName = "todoList";

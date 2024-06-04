@@ -21,6 +21,7 @@ import Modal from 'react-modal';
 // RegisterIndex 컴포넌트 추가
 import Register from "../sign-up/RegisterIndex";
 import { userRegister } from "api/axiosPost";
+import { wrong } from "api/alert";
 
 // 모달 element
 Modal.setAppElement('#app');
@@ -158,7 +159,6 @@ export default function Login() {
         });
         return;
       }
-
       // Firebase Authentication을 통해 사용자를 인증합니다.
       const checkuser = await signInWithEmailAndPassword(auth, userInfo.email, userInfo.password);
 
@@ -166,19 +166,27 @@ export default function Login() {
       if (checkuser) {
         const user = auth.currentUser;
         if (user) {
-          SetWithExpiry("uid", user.uid, 180); // 올바른 uid 설정
-          login(userInfo);
-          Swal.fire({ position: "center", icon: "success", title: "로그인에 성공하였습니다!", showConfirmButton: false, timer: 1200 });
           const res = await axios.get('/user/getUserByEmail', { params: { email: userInfo.email } })
             .catch(error => console.log(error));
+          if (res.data.status === 1) {
+            console.log(res.data.status);
+            wrong('비활성화 된 계정입니다.')
+            return;
+          }
+          login(userInfo);
+          SetWithExpiry("uid", user.uid, 180); // 올바른 uid 설정
+          Swal.fire({ position: "center", icon: "success", title: "로그인에 성공하였습니다!", showConfirmButton: false, timer: 1200 });
+
           SetWithExpiry("uid", res.data.id, 180);
           SetWithExpiry("email", res.data.email, 180);
           SetWithExpiry("profile", res.data.profile, 180);
           SetWithExpiry("nickname", res.data.nickname, 180);
           SetWithExpiry("statusMessage", res.data.statusMessage, 180);
           SetWithExpiry("role", res.data.role, 180);
-          updateActiveUser({ uid: res.data.id, email: res.data.email, nickname: res.data.nickname, 
-            role: res.data.role });
+          updateActiveUser({
+            uid: res.data.id, email: res.data.email, nickname: res.data.nickname,
+            role: res.data.role
+          });
 
           navigate('/home');
           setAnimationClass('fade-exit');

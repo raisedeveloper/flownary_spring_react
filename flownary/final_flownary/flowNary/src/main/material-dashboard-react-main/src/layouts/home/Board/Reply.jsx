@@ -231,20 +231,20 @@ export default function Reply(props) {
                       handleSearch(board.data.hashTag)
                     }
                   >
-                    #{board.data.hashTag}  
+                    #{board.data.hashTag}
                   </Button>
                 )
-              ) : null} 
+              ) : null}
             </MDBox>
             <MDBox>
               <Typography sx={{ fontSize: 'small', mr: 5, color: 'lightcoral' }}>
                 {replyList && replyList.data && replyList.data[index] ? '댓글 수 ' + replyList.data[index].replyCount + '개' : ''}
-              </Typography> 
-            </MDBox> 
+              </Typography>
+            </MDBox>
           </MDBox>
           <MDBox sx={{ p: 2, display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             {user && user.data && <Avatar
-              sx={{ bgcolor: 'red'[500], width: 0.07, height: 0.07  }}
+              sx={{ bgcolor: 'red'[500], width: '2rem', height: '2rem' }}
               aria-label="recipe"
               src={`https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${user.data.profile}`}
             />}
@@ -269,14 +269,14 @@ export default function Reply(props) {
             <List key={index} sx={{ width: '100%', bgcolor: 'background.paper', paddingRight: 0, fontSize: 'small' }}>
               {/* List랑 paper 영역 비슷함 */}
               <Box sx={{ border: 'none', }}>
-                <ListItem alignItems="flex-start" sx={{ marginTop: -3, marginLeft: 0.5 }}>
-                  <Avatar onClick={() => handleMyPage(data.uid)} sx={{ cursor: 'pointer', width: 0.07, height: 0.07 }}
+                <ListItem alignItems="flex-start" sx={{ marginTop: 0, marginLeft: 0.5 }}>
+                  <Avatar onClick={() => handleMyPage(data.uid)} sx={{ cursor: 'pointer', width: '1.5rem', height: '1.5rem' }}
                     src={`https://res.cloudinary.com/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload/${data.profile}`}
                   />
                   <ListItemText sx={{ paddingLeft: 1 }}
                     primary={<Typography variant="subtitle3" sx={{ fontSize: "15px", color: 'black', cursor: 'pointer' }} onClick={() => handleMyPage(data.uid)}>{data.nickname}</Typography>}
                     secondary={
-                      <Typography variant="body2" sx={{ overflowWrap: 'break-word', fontSize:'small' }}>
+                      <Typography variant="body2" sx={{ overflowWrap: 'break-word', fontSize: 'small' }}>
                         {data.rContents != null && (expandedContents[index] ? data.rContents : data.rContents.slice(0, 28))}
                         {data.rContents != null && data.rContents.length > 30 && !expandedContents[index] && (
                           <button className='replyOpen' style={{ color: 'gray', fontSize: 'small', marginLeft: 10 }} onClick={() => toggleExpand(index)}>...더보기</button>
@@ -294,13 +294,13 @@ export default function Reply(props) {
                 <Grid style={{ display: 'flex', alignItems: 'center' }}>
                   <Grid item xs={12} md={6} lg={4} style={{ display: 'flex', alignItems: 'center' }}>
                     <span style={{ flex: 1, color: 'gray', fontSize: '14px', paddingLeft: 50, }} >  <TimeAgo datetime={data.modTime} locale='ko' />ㆍ</span>
-                    <Button sx={{ color: 'lightcoral', padding: 0 }} onClick={() => handleButtonLikeReply(data.rid, data.uid)}>좋아요 {data.likeCount}개  {data.liked ?
+                    <Button sx={{ color: 'lightcoral', padding: 0, '&:hover, &:active, &:visited': { color: 'lightcoral' } }} onClick={() => handleButtonLikeReply(data.rid, data.uid)}>좋아요 {data.likeCount}개  {data.liked ?
                       <FavoriteIcon sx={{ color: 'lightcoral' }} /> : <FavoriteBorderIcon sx={{ color: 'lightcoral' }} />}</Button>
 
                     {!formChange[data.rid] &&
                       <>
-                        <Button onClick={() => handleButtonClick(data.rid)} sx={{ color: 'lightcoral', padding: 0 }}>답글</Button>
-                        {data.uid === activeUser.uid && <Button onClick={() => handleDelete(data.rid)} sx={{ color: 'lightcoral', padding: 0 }}>삭제</Button>}
+                        <Button onClick={() => handleButtonClick(data.rid)} sx={{ color: 'lightcoral', padding: 0, '&:hover, &:active, &:visited': { color: 'lightcoral' } }}>답글</Button>
+                        {data.uid === activeUser.uid && <Button onClick={() => handleDelete(data.rid)} sx={{ color: 'lightcoral', padding: 0, '&:hover, &:active, &:visited': { color: 'lightcoral' } }}>삭제</Button>}
                       </>
                     }
                   </Grid>
@@ -315,13 +315,13 @@ export default function Reply(props) {
                           [data.rid]: e.target.value,
                         }));
                       }}
-                      placeholder="댓글.."
+                      placeholder="댓글입력.."
                       className="custom-input"
                       onClick={(e) => e.stopPropagation()}
                       onKeyUp={(e) => { handleKeyPress2(e, formInputs[data.rid], data.rid); if (e && e.key === 'Enter') { formChange[data.rid] = false } }}
                     />
-                    <Button onClick={(e) => { handleFormSubmit2(e, formInputs[data.rid], data.rid); formChange[data.rid] = false; }} sx={{ color: 'lightcoral', padding: 0 }}>게시</Button>
-                    <Button onClick={() => handleButtonClick(data.rid)} sx={{ color: 'lightcoral', padding: 0 }}>취소</Button>
+                    <Button onClick={(e) => { handleFormSubmit2(e, formInputs[data.rid], data.rid); formChange[data.rid] = false; }} sx={{ color: 'lightcoral', padding: 0, '&:hover, &:active': { color: 'lightcoral' } }}>게시</Button>
+                    <Button onClick={() => handleButtonClick(data.rid)} sx={{ color: 'lightcoral', padding: 0, '&:hover, &:active': { color: 'lightcoral' } }}>취소</Button>
                   </Box>
                 }
                 <Button onClick={() => handleMoreReply(data.rid)} sx={{ marginLeft: 3, paddingTop: 0 }} style={{ color: 'lightcoral' }}>
@@ -343,8 +343,8 @@ export default function Reply(props) {
                 {showReReply[data.rid] && (
                   <ReReply rid={data.rid} uid={uid} nickname={nickname} handleButtonLikeReReply={handleButtonLikeReReply} handleMyPage={handleMyPage} />
                 )}
-              </Box> 
-            </List> 
+              </Box>
+            </List>
           ))}
         </Stack>
       </MDBox>
